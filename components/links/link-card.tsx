@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ExternalLink } from 'lucide-react'
 import { CopyButton } from './copy-button'
+import { QRCodeButton } from './qrcode-button'
+import { LinkActions } from './link-actions'
 import { LinkWithClickCount } from '@/lib/repositories/link.repository'
 
 interface LinkCardProps {
@@ -39,11 +41,13 @@ export function LinkCard({ link }: LinkCardProps) {
         </div>
         <div className="flex items-center gap-1 ml-4">
           <CopyButton slug={link.slug} />
+          <QRCodeButton linkId={link.id} slug={link.slug} />
           <Button size="sm" variant="ghost" asChild>
             <a href={link.url} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="w-4 h-4" />
             </a>
           </Button>
+          <LinkActions linkId={link.id} disabled={link.disabled} />
         </div>
       </CardContent>
     </Card>

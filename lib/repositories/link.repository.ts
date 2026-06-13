@@ -1,5 +1,9 @@
 import { prisma } from '@/lib/prisma'
-import { Link } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
+
+type Link = Awaited<ReturnType<PrismaClient['link']['findUnique']>> extends infer T 
+  ? NonNullable<T> 
+  : never
 
 export type LinkWithClickCount = Link & {
   _count: { clicks: number }
@@ -53,4 +57,10 @@ export class LinkRepository {
       where: { userId },
     })
   }
+
+  static async findById(id: string): Promise<Link | null> {
+  return prisma.link.findUnique({
+    where: { id },
+  })
+}
 }

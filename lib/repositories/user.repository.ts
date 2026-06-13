@@ -1,5 +1,9 @@
 import { prisma } from '@/lib/prisma'
-import { User } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
+
+type User = Awaited<ReturnType<PrismaClient['user']['findUnique']>> extends infer T
+  ? NonNullable<T>
+  : never
 
 export class UserRepository {
   static async findByClerkId(clerkId: string): Promise<User | null> {
