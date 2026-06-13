@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
+import { LinkRepository, ClickRepository } from '@/lib/repositories'
 
 export async function GET(
   req: Request,
@@ -8,43 +8,28 @@ export async function GET(
 ) {
   const { slug } = await params
   const headersList = await headers()
+  const homeUrl = new URL('/', req.url)
 
-  const link = await prisma.link.findUnique({ where: { slug } })
+  const link = await LinkRepository.findBySlug(slug)
 
-  // Link não encontrado
-  if (!link) {
-    return NextResponse.redirect(new URL('/', req.url))
+  if (!link || link.disabled) {
+    return NextResponse.redirect(homeUrl)
   }
 
-  // Link desativado
-  if (link.disabled) {
-    return NextResponse.redirect(new URL('/', req.url))
-  }
-
-  // Link expirado por data
   if (link.expiresAt && new Date() > link.expiresAt) {
-    return NextResponse.redirect(new URL('/', req.url))
+    return NextResponse.redirect(homeUrl)
   }
 
-  // Link expirado por cliques
   if (link.maxClicks) {
-    const clickCount = await prisma.click.count({ where: { linkId: link.id } })
+    const clickCount = await ClickRepository.countByLinkId(link.id)
     if (clickCount >= link.maxClicks) {
-      return NextResponse.redirect(new URL('/', req.url))
+      return NextResponse.redirect(homeUrl)
     }
   }
 
-  // Registra o clique
-  const userAgent = headersList.get('user-agent') ?? ''
-  const referrer = headersList.get('referer') ?? null
-  const ip = headersList.get('x-forwarded-for')?.split(',')[0] ?? null
-
-  await prisma.click.create({
-    data: {
-      linkId: link.id,
-      referrer,
-      // País e cidade virão na Fase 2 com geolocalização por IP
-    },
+  await ClickRepository.create({
+    linkId: link.id,
+    referrer: headersList.get('referer') ?? null,
   })
 
   return NextResponse.redirect(link.url, { status: 302 })
