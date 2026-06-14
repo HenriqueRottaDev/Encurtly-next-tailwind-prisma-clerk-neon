@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { UserRepository, LinkRepository } from '@/lib/repositories'
 import { generateUniqueSlug, isValidSlug } from '@/lib/utils/slug'
 import { z } from 'zod'
 
@@ -13,29 +13,22 @@ const createLinkSchema = z.object({
   maxClicks: z.number().int().positive().optional(),
 })
 
-// GET — listar links do usuário
 export async function GET() {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const user = await prisma.user.findUnique({ where: { clerkId: userId } })
+  const user = await UserRepository.findByClerkId(userId)
   if (!user) return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
 
-  const links = await prisma.link.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: 'desc' },
-    include: { _count: { select: { clicks: true } } },
-  })
-
+  const links = await LinkRepository.findByUserId(user.id)
   return NextResponse.json(links)
 }
 
-// POST — criar link
 export async function POST(req: Request) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const user = await prisma.user.findUnique({ where: { clerkId: userId } })
+  const user = await UserRepository.findByClerkId(userId)
   if (!user) return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
 
   const body = await req.json()
@@ -47,12 +40,11 @@ export async function POST(req: Request) {
 
   const { url, slug, title, password, expiresAt, maxClicks } = parsed.data
 
-  // Valida slug customizado
   if (slug) {
     if (!isValidSlug(slug)) {
       return NextResponse.json({ error: 'Slug inválido' }, { status: 400 })
     }
-    const existing = await prisma.link.findUnique({ where: { slug } })
+    const existing = await LinkRepository.findBySlug(slug)
     if (existing) {
       return NextResponse.json({ error: 'Slug já em uso' }, { status: 409 })
     }
@@ -60,16 +52,13 @@ export async function POST(req: Request) {
 
   const finalSlug = slug ?? await generateUniqueSlug()
 
-  const link = await prisma.link.create({
-    data: {
-      url,
-      slug: finalSlug,
-      title,
-      password,
-      expiresAt: expiresAt ? new Date(expiresAt) : null,
-      maxClicks,
-      userId: user.id,
-    },
+  const link = await LinkRepository.create(user.id, {
+    url,
+    slug: finalSlug,
+    title,
+    password,
+    expiresAt: expiresAt ? new Date(expiresAt) : null,
+    maxClicks,
   })
 
   return NextResponse.json(link, { status: 201 })
