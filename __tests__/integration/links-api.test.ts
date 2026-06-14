@@ -2,6 +2,30 @@ import { GET, POST } from '@/app/api/links/route'
 import { prisma } from '@/lib/prisma'
 import { createRequest } from '../helpers/request'
 
+// Mock do Prisma
+jest.mock('@/lib/prisma', () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      delete: jest.fn(),
+    },
+    link: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
+    },
+    click: {
+      create: jest.fn(),
+      count: jest.fn(),
+      findMany: jest.fn(),
+    },
+  },
+}))
+
 // Mock do Clerk
 jest.mock('@clerk/nextjs/server', () => ({
   auth: jest.fn(),

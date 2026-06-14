@@ -1,7 +1,8 @@
+import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, BarChart3 } from 'lucide-react'
 import { CopyButton } from './copy-button'
 import { QRCodeButton } from './qrcode-button'
 import { LinkActions } from './link-actions'
@@ -17,7 +18,7 @@ export function LinkCard({ link }: LinkCardProps) {
       <CardContent className="flex items-center justify-between py-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-medium text-violet-600 text-sm">
+            <span className="font-medium text-primary text-sm">
               /r/{link.slug}
             </span>
             <Badge variant="secondary" className="text-xs">
@@ -32,14 +33,19 @@ export function LinkCard({ link }: LinkCardProps) {
               </Badge>
             )}
           </div>
-          <p className="text-sm text-slate-500 truncate mt-0.5">
+          <p className="text-sm text-muted-foreground truncate mt-0.5">
             {link.title || link.url}
           </p>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-muted-foreground/70 mt-0.5">
             {new Date(link.createdAt).toLocaleDateString('pt-BR')}
           </p>
         </div>
         <div className="flex items-center gap-1 ml-4">
+          <Button size="sm" variant="ghost" asChild title="Ver analytics">
+            <Link href={`/dashboard/links/${link.id}`}>
+              <BarChart3 className="w-4 h-4" />
+            </Link>
+          </Button>
           <CopyButton slug={link.slug} />
           <QRCodeButton linkId={link.id} slug={link.slug} />
           <Button size="sm" variant="ghost" asChild>

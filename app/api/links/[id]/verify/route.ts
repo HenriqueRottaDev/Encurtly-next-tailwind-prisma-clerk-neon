@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { headers } from 'next/headers'
 import { LinkRepository, ClickRepository } from '@/lib/repositories'
+import { extractClickInfo } from '@/lib/utils/click-info'
 
 export async function POST(
   req: Request,
@@ -8,7 +8,6 @@ export async function POST(
 ) {
   const { id } = await params
   const { password } = await req.json()
-  const headersList = await headers()
 
   const link = await LinkRepository.findBySlug(id)
 
@@ -16,7 +15,6 @@ export async function POST(
     return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
   }
 
-  // Verifica limite de cliques
   if (link.maxClicks) {
     const clickCount = await ClickRepository.countByLinkId(link.id)
     if (clickCount >= link.maxClicks) {
@@ -24,7 +22,6 @@ export async function POST(
     }
   }
 
-  // Verifica expiração por data
   if (link.expiresAt && new Date() > link.expiresAt) {
     return NextResponse.json({ error: 'Link expirado' }, { status: 410 })
   }
@@ -33,10 +30,11 @@ export async function POST(
     return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 })
   }
 
-  // Registra o clique após senha correta
+  const clickInfo = await extractClickInfo(req.url)
+
   await ClickRepository.create({
     linkId: link.id,
-    referrer: headersList.get('referer') ?? null,
+    ...clickInfo,
   })
 
   return NextResponse.json({ url: link.url })
