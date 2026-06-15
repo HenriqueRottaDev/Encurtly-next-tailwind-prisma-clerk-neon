@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ['@clerk/nextjs', '@clerk/backend'],
 };
 
 export default nextConfig;
