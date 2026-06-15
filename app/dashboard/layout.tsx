@@ -21,7 +21,7 @@ export default function DashboardLayout({
             <Link href="/dashboard/analytics" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
               Analytics
             </Link>
-            <UserButton afterSignOutUrl="/" />
+            <UserButton signOutFallbackUrl="/" />
           </nav>
         </div>
       </header>
