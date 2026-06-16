@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { auth } from '@clerk/nextjs/server'
+import { UserButton } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -10,7 +12,10 @@ import {
   Zap,
 } from 'lucide-react'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { userId } = await auth()
+  const isLoggedIn = !!userId
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navbar */}
@@ -20,12 +25,23 @@ export default function HomePage() {
             Encurtly
           </span>
           <nav className="flex items-center gap-2">
-            <Button variant="ghost" asChild>
-              <Link href="/sign-in">Entrar</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/sign-up">Criar conta</Link>
-            </Button>
+            {isLoggedIn ? (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/dashboard">Meus Links</Link>
+                </Button>
+                <UserButton />
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/sign-in">Entrar</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/sign-up">Criar conta</Link>
+                </Button>
+              </>
+            )}
           </nav>
         </div>
       </header>

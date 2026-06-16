@@ -39,18 +39,29 @@ export function LinkCard({ link }: LinkCardProps) {
           <p className="text-xs text-muted-foreground/70 mt-0.5">
             {new Date(link.createdAt).toLocaleDateString('pt-BR')}
           </p>
+          {link.expiresAt && (
+            <p className="text-xs text-muted-foreground/70 mt-0.5">
+              Expira em: {new Date(link.expiresAt).toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </p>
+          )}
         </div>
-        <div className="flex items-center gap-1 ml-4">
-          <Button size="sm" variant="ghost" asChild title="Ver analytics">
+        <div className="flex items-center gap-2 ml-4">
+          <Button size="default" variant="ghost" asChild title="Ver analytics">
             <Link href={`/dashboard/links/${link.id}`}>
-              <BarChart3 className="w-4 h-4" />
+              <BarChart3 className="w-5 h-5" />
             </Link>
           </Button>
           <CopyButton slug={link.slug} />
           <QRCodeButton linkId={link.id} slug={link.slug} />
-          <Button size="sm" variant="ghost" asChild>
+          <Button size="default" variant="ghost" asChild>
             <a href={link.url} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-5 h-5" />
             </a>
           </Button>
           <LinkActions linkId={link.id} disabled={link.disabled} />

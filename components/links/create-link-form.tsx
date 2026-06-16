@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useMutation } from '@tanstack/react-query'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
 
 async function createLink(data: {
   url: string
@@ -23,6 +24,13 @@ async function createLink(data: {
   })
   if (!res.ok) {
     const err = await res.json()
+    // Se o erro for um objeto do Zod, extrai a mensagem legível
+    if (typeof err.error === 'object') {
+      const fieldErrors = err.error?.fieldErrors
+      const firstField = fieldErrors ? Object.keys(fieldErrors)[0] : null
+      const firstMessage = firstField ? fieldErrors[firstField]?.[0] : null
+      throw new Error(firstMessage ?? 'Dados inválidos')
+    }
     throw new Error(err.error || 'Erro ao criar link')
   }
   return res.json()
@@ -38,7 +46,7 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
   const [slug, setSlug] = useState('')
   const [title, setTitle] = useState('')
   const [password, setPassword] = useState('')
-  const [expiresAt, setExpiresAt] = useState('')
+  const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined)
   const [maxClicks, setMaxClicks] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
 
@@ -58,7 +66,8 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
       slug: slug || undefined,
       title: title || undefined,
       password: password || undefined,
-      expiresAt: expiresAt || undefined,
+      // toISOString() sempre gera formato válido independente do idioma do navegador
+      expiresAt: expiresAt ? expiresAt.toISOString() : undefined,
       maxClicks: maxClicks ? parseInt(maxClicks) : undefined,
     })
   }
@@ -131,11 +140,7 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
                 <label className="text-xs text-muted-foreground mb-1 block">
                   Data de expiração
                 </label>
-                <Input
-                  type="datetime-local"
-                  value={expiresAt}
-                  onChange={e => setExpiresAt(e.target.value)}
-                />
+                <DateTimePicker value={expiresAt} onChange={setExpiresAt} />
               </div>
             </div>
           )}

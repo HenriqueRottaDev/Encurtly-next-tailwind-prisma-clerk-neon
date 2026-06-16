@@ -18,13 +18,12 @@ export function CopyButton({ slug }: CopyButtonProps) {
   }
 
   return (
-    <Button size="sm" variant="ghost" onClick={handleCopy}>
+    <Button size="default" variant="ghost" onClick={handleCopy}>
       {copied ? (
-        <Check className="w-4 h-4 text-green-500" />
+        <Check className="w-5 h-5 text-green-500" />
       ) : (
-        <Copy className="w-4 h-4" />
+        <Copy className="w-5 h-5" />
       )}
-      <span className="ml-1 text-xs">{copied ? 'Copiado!' : ''}</span>
     </Button>
   )
 }

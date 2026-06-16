@@ -5,12 +5,12 @@ import { generateUniqueSlug, isValidSlug } from '@/lib/utils/slug'
 import { z } from 'zod'
 
 const createLinkSchema = z.object({
-  url: z.string().url('URL inválida'),
-  slug: z.string().optional(),
-  title: z.string().optional(),
+  url: z.string().url('URL inválida — certifique-se de incluir http:// ou https://'),
+  slug: z.string().min(3, 'Slug deve ter pelo menos 3 caracteres').max(50, 'Slug deve ter no máximo 50 caracteres').optional(),
+  title: z.string().max(100, 'Título deve ter no máximo 100 caracteres').optional(),
   password: z.string().optional(),
-  expiresAt: z.string().datetime().optional(),
-  maxClicks: z.number().int().positive().optional(),
+  expiresAt: z.string().datetime('Data de expiração inválida').optional(),
+  maxClicks: z.number().int().positive('Máximo de cliques deve ser um número positivo').optional(),
 })
 
 export async function GET() {

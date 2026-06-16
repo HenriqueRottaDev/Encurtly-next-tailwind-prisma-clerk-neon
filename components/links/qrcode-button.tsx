@@ -46,8 +46,8 @@ export function QRCodeButton({ linkId, slug }: QRCodeButtonProps) {
 
   return (
     <>
-      <Button size="sm" variant="ghost" onClick={handleOpen}>
-        <QrCode className="w-4 h-4" />
+      <Button size="default" variant="ghost" onClick={handleOpen}>
+        <QrCode className="w-5 h-5" />
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
