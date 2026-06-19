@@ -26,6 +26,12 @@ export default function DashboardLayout({
             >
               Analytics
             </Link>
+            <Link
+              href="/pricing"
+              className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            >
+              Planos
+            </Link>
             <div className="ml-2">
               <UserButton />
             </div>

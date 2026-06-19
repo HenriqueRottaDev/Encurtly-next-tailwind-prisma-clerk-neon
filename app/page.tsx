@@ -114,10 +114,17 @@ export default async function HomePage() {
         <p className="text-muted-foreground mb-6">
           Crie sua conta gratuita e comece a encurtar links em segundos.
         </p>
-        <Button size="lg" asChild>
-          <Link href="/sign-up">Criar conta gratuita</Link>
-        </Button>
+        <div className="flex items-center justify-center gap-3">
+          <Button size="lg" asChild>
+            <Link href="/sign-up">Criar conta gratuita</Link>
+          </Button>
+          <Button size="lg" variant="outline" asChild>
+            <Link href="/pricing">Ver planos</Link>
+          </Button>
+        </div>
       </section>
+
+
 
       {/* Footer */}
       <footer className="border-t border-border py-6">
