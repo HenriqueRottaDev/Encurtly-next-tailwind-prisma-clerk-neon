@@ -55,7 +55,6 @@ export async function POST(req: Request) {
       (invoice.parent as any)?.subscription_details?.subscription as string
 
     if (!subscriptionId) return new Response('Subscription não encontrada', { status: 400 })
-
     const subscription = await stripe.subscriptions.retrieve(subscriptionId)
     const customer = await stripe.customers.retrieve(
       subscription.customer as string
