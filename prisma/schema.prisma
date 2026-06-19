@@ -9,15 +9,18 @@ datasource db {
 
 // ─── USUÁRIO ───────────────────────────────────────────
 model User {
-  id        String   @id @default(cuid())
-  clerkId   String   @unique
-  email     String   @unique
-  name      String?
-  plan      Plan     @default(FREE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  clerkId                String   @unique
+  email                  String   @unique
+  name                   String?
+  plan                   Plan     @default(FREE)
+  stripeCustomerId       String?  @unique
+  stripeSubscriptionId   String?  @unique
+  stripeCurrentPeriodEnd DateTime?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
-  links     Link[]
+  links      Link[]
   workspaces WorkspaceMember[]
 }
 

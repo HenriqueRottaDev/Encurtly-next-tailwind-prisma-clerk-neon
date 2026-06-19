@@ -25,4 +25,25 @@ export class UserRepository {
       where: { clerkId },
     })
   }
+
+  static async updateStripeInfo(
+    clerkId: string,
+    data: {
+      stripeCustomerId?: string
+      stripeSubscriptionId?: string
+      stripeCurrentPeriodEnd?: Date
+      plan?: 'FREE' | 'PRO' | 'AGENCY'
+    }
+  ) {
+    return prisma.user.update({
+      where: { clerkId },
+      data,
+    })
+  }
+
+  static async findByStripeCustomerId(stripeCustomerId: string) {
+    return prisma.user.findUnique({
+      where: { stripeCustomerId },
+    })
+  }
 }
