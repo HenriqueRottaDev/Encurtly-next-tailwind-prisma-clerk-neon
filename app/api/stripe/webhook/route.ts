@@ -4,6 +4,13 @@ import { stripe } from '@/lib/stripe'
 import { UserRepository } from '@/lib/repositories'
 import Stripe from 'stripe'
 
+// Na versão dahlia, current_period_end fica dentro de items.data[0], não no nível raiz
+function getCurrentPeriodEnd(subscription: Stripe.Subscription): Date | null {
+  const item = subscription.items.data[0]
+  const timestamp = (item as any)?.current_period_end
+  return timestamp ? new Date(timestamp * 1000) : null
+}
+
 export async function POST(req: Request) {
   const body = await req.text()
   const headersList = await headers()
@@ -34,10 +41,7 @@ export async function POST(req: Request) {
 
     if (!clerkId || !plan) return new Response('Metadata ausente', { status: 400 })
 
-    // Na versão dahlia, o período atual fica em billing_cycle_anchor
-    const periodEnd = (subscription as any).current_period_end
-      ? new Date((subscription as any).current_period_end * 1000)
-      : null
+    const periodEnd = getCurrentPeriodEnd(subscription)
 
     await UserRepository.updateStripeInfo(clerkId, {
       stripeSubscriptionId: subscription.id,
@@ -63,9 +67,7 @@ export async function POST(req: Request) {
     const user = await UserRepository.findByStripeCustomerId(customer.id)
     if (!user) return new Response('Usuário não encontrado', { status: 404 })
 
-    const periodEnd = (subscription as any).current_period_end
-      ? new Date((subscription as any).current_period_end * 1000)
-      : null
+    const periodEnd = getCurrentPeriodEnd(subscription)
 
     await UserRepository.updateStripeInfo(user.clerkId, {
       ...(periodEnd && { stripeCurrentPeriodEnd: periodEnd }),
@@ -96,8 +98,11 @@ export async function POST(req: Request) {
       // em vez de "cancel_at_period_end" sempre ser true
       const isCancelScheduled = !!(subscription as any).cancel_at || !!subscription.cancel_at_period_end
 
+      const periodEnd = getCurrentPeriodEnd(subscription)
+
       await UserRepository.updateStripeInfo(user.clerkId, {
         stripeCancelAtPeriodEnd: isCancelScheduled,
+        ...(periodEnd && { stripeCurrentPeriodEnd: periodEnd }),
       })
     }
   }
