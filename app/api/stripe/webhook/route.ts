@@ -87,14 +87,17 @@ export async function POST(req: Request) {
     if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
       await UserRepository.updateStripeInfo(user.clerkId, {
         plan: 'FREE',
-        stripeSubscriptionId: undefined,
-        stripeCurrentPeriodEnd: undefined,
+        stripeSubscriptionId: null,
+        stripeCurrentPeriodEnd: null,
         stripeCancelAtPeriodEnd: false,
       })
     } else {
-      // Atualiza o status de cancelamento agendado (sem mudar o plano ainda)
+      // Nessa versão da API, cancelamento agendado aparece via "cancel_at" (timestamp)
+      // em vez de "cancel_at_period_end" sempre ser true
+      const isCancelScheduled = !!(subscription as any).cancel_at || !!subscription.cancel_at_period_end
+
       await UserRepository.updateStripeInfo(user.clerkId, {
-        stripeCancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
+        stripeCancelAtPeriodEnd: isCancelScheduled,
       })
     }
   }
