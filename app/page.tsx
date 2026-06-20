@@ -128,8 +128,12 @@ export default async function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-border py-6">
-        <div className="max-w-6xl mx-auto px-4 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Encurtly. Todos os direitos reservados.
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+          <span>© {new Date().getFullYear()} Encurtly. Todos os direitos reservados.</span>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-foreground">Privacidade</Link>
+            <Link href="/terms" className="hover:text-foreground">Termos de Uso</Link>
+          </div>
         </div>
       </footer>
     </div>

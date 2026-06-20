@@ -30,8 +30,9 @@ export class UserRepository {
     clerkId: string,
     data: {
       stripeCustomerId?: string
-      stripeSubscriptionId?: string
-      stripeCurrentPeriodEnd?: Date
+      stripeSubscriptionId?: string | null
+      stripeCurrentPeriodEnd?: Date | null
+      stripeCancelAtPeriodEnd?: boolean
       plan?: 'FREE' | 'PRO' | 'AGENCY'
     }
   ) {
@@ -44,6 +45,12 @@ export class UserRepository {
   static async findByStripeCustomerId(stripeCustomerId: string) {
     return prisma.user.findUnique({
       where: { stripeCustomerId },
+    })
+  }
+
+  static async findById(id: string) {
+    return prisma.user.findUnique({
+      where: { id },
     })
   }
 }

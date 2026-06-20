@@ -146,7 +146,14 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
           )}
 
           {mutation.error && (
-            <p className="text-sm text-destructive">{mutation.error.message}</p>
+            <div className="space-y-2">
+              <p className="text-sm text-destructive">{mutation.error.message}</p>
+              {mutation.error.message.includes('limite') && (
+                <Button size="sm" variant="outline" asChild>
+                  <a href="/pricing">Ver planos</a>
+                </Button>
+              )}
+            </div>
           )}
 
           <div className="flex gap-2">

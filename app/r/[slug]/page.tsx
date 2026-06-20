@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
-import { LinkRepository, ClickRepository } from '@/lib/repositories'
+import { LinkRepository, ClickRepository, UserRepository } from '@/lib/repositories'
 import { extractClickInfo } from '@/lib/utils/click-info'
 import { PasswordForm } from '@/components/links/password-form'
+import { checkClickLimit } from '@/lib/utils/check-limits'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -32,10 +33,16 @@ export default async function LinkPage({ params }: PageProps) {
   // Captura dados detalhados do clique
   const clickInfo = await extractClickInfo(`https://encurtly.com.br/r/${slug}`)
 
-  await ClickRepository.create({
-    linkId: link.id,
-    ...clickInfo,
-  })
+  const owner = await UserRepository.findById(link.userId)
+  if (owner) {
+    const clickLimitCheck = await checkClickLimit(owner.id, owner.plan)
+    if (clickLimitCheck.allowed) {
+      await ClickRepository.create({
+        linkId: link.id,
+        ...clickInfo,
+      })
+    }
+  }
 
   redirect(link.url)
 }

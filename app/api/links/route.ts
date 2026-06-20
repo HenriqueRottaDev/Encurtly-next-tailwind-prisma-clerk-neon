@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { UserRepository, LinkRepository } from '@/lib/repositories'
 import { generateUniqueSlug, isValidSlug } from '@/lib/utils/slug'
 import { z } from 'zod'
+import { checkLinkLimit } from '@/lib/utils/check-limits'
 
 const createLinkSchema = z.object({
   url: z.string().url('URL inválida — certifique-se de incluir http:// ou https://'),
@@ -30,6 +31,14 @@ export async function POST(req: Request) {
 
   const user = await UserRepository.findByClerkId(userId)
   if (!user) return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
+
+  const limitCheck = await checkLinkLimit(user.id, user.plan)
+  if (!limitCheck.allowed) {
+    return NextResponse.json(
+      { error: limitCheck.reason, upgradeRequired: true },
+      { status: 403 }
+    )
+  }
 
   const body = await req.json()
   const parsed = createLinkSchema.safeParse(body)

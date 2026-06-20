@@ -89,6 +89,12 @@ export async function POST(req: Request) {
         plan: 'FREE',
         stripeSubscriptionId: undefined,
         stripeCurrentPeriodEnd: undefined,
+        stripeCancelAtPeriodEnd: false,
+      })
+    } else {
+      // Atualiza o status de cancelamento agendado (sem mudar o plano ainda)
+      await UserRepository.updateStripeInfo(user.clerkId, {
+        stripeCancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
       })
     }
   }
