@@ -28,10 +28,10 @@ export default function PrivacyPage() {
           <h2 className="text-lg font-semibold mt-6">2. Dados que coletamos</h2>
           <p><strong>Dados da conta:</strong> nome, e-mail, e dados de autenticação (gerenciados via Clerk).</p>
           <p><strong>Dados de pagamento:</strong> processados exclusivamente pelo Stripe. Não armazenamos dados
-          de cartão de crédito em nossos servidores.</p>
+            de cartão de crédito em nossos servidores.</p>
           <p><strong>Dados de uso dos links:</strong> quando alguém clica em um link encurtado, registramos
-          o endereço IP (usado apenas para geolocalização aproximada, não armazenado em texto puro),
-          tipo de dispositivo, navegador, sistema operacional, página de origem (referrer) e parâmetros UTM.</p>
+            o endereço IP (usado apenas para geolocalização aproximada, não armazenado em texto puro),
+            tipo de dispositivo, navegador, sistema operacional, página de origem (referrer) e parâmetros UTM.</p>
 
           <h2 className="text-lg font-semibold mt-6">3. Finalidade do tratamento</h2>
           <ul className="list-disc pl-5 space-y-1">
@@ -69,6 +69,20 @@ export default function PrivacyPage() {
           <p>
             Para exercer qualquer um desses direitos, entre em contato pelo e-mail{' '}
             <a href="mailto:privacidade@encurtly.com.br" className="text-primary">privacidade@encurtly.com.br</a>.
+          </p>
+
+          <h2 className="text-lg font-semibold mt-6">5.1 Como solicitar a exclusão da sua conta</h2>
+          <p>
+            Para solicitar a exclusão da sua conta e de todos os dados pessoais associados (links,
+            estatísticas de cliques e informações de cadastro), envie um e-mail para{' '}
+            <a href="mailto:privacidade@encurtly.com.br" className="text-primary">privacidade@encurtly.com.br</a>{' '}
+            com o assunto <strong>&quot;Exclusão de conta&quot;</strong>, a partir do mesmo endereço de
+            e-mail cadastrado na sua conta.
+          </p>
+          <p>
+            Processaremos sua solicitação em até 15 dias úteis. Caso você possua uma assinatura ativa,
+            ela será cancelada antes da exclusão dos dados. Você receberá um e-mail de confirmação
+            quando o processo for concluído.
           </p>
 
           <h2 className="text-lg font-semibold mt-6">6. Retenção de dados</h2>
