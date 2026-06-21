@@ -18,9 +18,9 @@ export function CopyButton({ slug }: CopyButtonProps) {
   }
 
   return (
-    <Button size="default" variant="ghost" onClick={handleCopy}>
+    <Button size="default" variant="ghost" onClick={handleCopy} aria-label="Copiar link">
       {copied ? (
-        <Check className="w-5 h-5 text-green-500" />
+        <Check className="w-5 h-5 text-green-500" data-testid="copy-success-icon" />
       ) : (
         <Copy className="w-5 h-5" />
       )}

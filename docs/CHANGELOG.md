@@ -81,3 +81,53 @@
 - 6 novos testes de integração para APIs de analytics (overview + por link)
 - Testes E2E da home atualizados (hero, navegação para sign-up)
 - Total: 27 testes Jest + 6 testes E2E passando
+
+
+---
+
+## [Fase 3] Monetização (Stripe) — Concluído
+
+### Integração com Stripe
+- Planos Pro (R$ 29/mês) e Agência (R$ 79/mês) criados no Stripe Dashboard
+- Plano Free controlado via banco de dados (sem produto no Stripe)
+- Cliente Stripe lazy-initialized via Proxy (evita falha de build na Vercel)
+- Schema do banco estendido: `stripeCustomerId`, `stripeSubscriptionId`, `stripeCurrentPeriodEnd`, `stripeCancelAtPeriodEnd`
+
+### APIs
+- `POST /api/stripe/checkout` — cria customer (se necessário) e sessão de Checkout
+- `POST /api/stripe/portal` — cria sessão do Billing Portal para autogerenciamento
+- `POST /api/stripe/webhook` — processa eventos:
+  - `checkout.session.completed` — ativa o plano após pagamento
+  - `invoice.payment_succeeded` — atualiza período de renovação
+  - `customer.subscription.updated` / `customer.subscription.deleted` — rebaixa para FREE em cancelamento/inadimplência, ou marca cancelamento agendado
+
+### Limites por plano
+- `lib/utils/check-limits.ts`: `checkLinkLimit()` e `checkClickLimit()`
+- Free: 50 links / 1.000 cliques mensais — Pro: ilimitado / 25.000 — Agência: ilimitado / 100.000
+- Bloqueio na criação de links ao atingir limite (com mensagem amigável e CTA de upgrade)
+- Cliques além do limite mensal não são rastreados (silenciosamente, sem quebrar o redirecionamento)
+
+### Interface
+- `/pricing` — página de planos com cards Free/Pro/Agência, integração com checkout/portal
+- `PlanUsage` no dashboard — mostra uso atual de links/cliques com barras de progresso
+- Aviso de cancelamento agendado ("Sua assinatura está ativa até DD/MM/AAAA")
+- Banner de boas-vindas após assinatura bem-sucedida
+
+### LGPD
+- Páginas `/privacy` (Política de Privacidade) e `/terms` (Termos de Uso)
+- Aviso de aceite de termos na tela de cadastro
+
+### Testes
+- 13 testes para limites de plano (`check-limits.test.ts`)
+- 6 testes para checkout (`stripe-checkout.test.ts`)
+- 5 testes para portal do cliente (`stripe-portal.test.ts`)
+- 11 testes para webhook (`stripe-webhook.test.ts`), cobrindo casos reais de incompatibilidade de versão da API Stripe (`current_period_end` aninhado em `items.data[0]`, `cancel_at` vs `cancel_at_period_end`)
+- Total: 62 testes Jest + 7 testes E2E passando
+
+### Bugs corrigidos durante o desenvolvimento
+- Versão da API Stripe atualizada para `2026-05-27.dahlia`
+- `current_period_end` não está mais no nível raiz da `Subscription`, mas dentro de `items.data[0]`
+- `Invoice.subscription` renomeado — fallback para `invoice.parent.subscription_details.subscription`
+- Cancelamento agendado nessa versão da API reflete via `cancel_at` (timestamp), não apenas `cancel_at_period_end`
+- Webhook duplicado (Cloudflare Tunnel antigo) causando falhas de entrega — removido
+- `NEXT_PUBLIC_APP_URL` configurada incorretamente na Vercel (causava URLs erradas no QR Code)

@@ -4,6 +4,12 @@ Encurtador de links inteligente com analytics completo, focado no público brasi
 
 ## ✨ Funcionalidades
 
+### Monetização
+- Planos Free, Pro e Agência com cobrança recorrente via Stripe
+- Checkout hospedado e portal de autogerenciamento (cartão, faturas, cancelamento)
+- Limites de uso por plano (links e cliques mensais)
+- Página de preços (`/pricing`)
+
 ### Links
 - Encurtamento de URLs com slug personalizado
 - QR Code automático para cada link
@@ -31,6 +37,7 @@ Encurtador de links inteligente com analytics completo, focado no público brasi
 | ORM | Prisma |
 | Autenticação | Clerk |
 | Estado servidor | TanStack Query |
+| Pagamentos | Stripe (Checkout + Billing Portal + Webhooks) |
 | UI | Tailwind CSS + shadcn/ui (preset Nova) |
 | Testes unitários/integração | Jest |
 | Testes E2E | Playwright + @clerk/testing |
@@ -114,7 +121,10 @@ encurtly/
 │   ├── api/
 │   │   ├── links/             # CRUD de links + QR Code + verificação de senha + analytics
 │   │   ├── analytics/         # Overview geral de analytics
+│   │   ├── stripe/            # Checkout, portal e webhook do Stripe
 │   │   └── webhooks/clerk/    # Sincronização de usuários
+│   ├── pricing/                # Página de planos
+│   ├── privacy/ terms/         # LGPD - Política de Privacidade e Termos de Uso
 │   ├── dashboard/
 │   │   ├── analytics/         # Página de analytics geral
 │   │   └── links/[id]/        # Página de analytics por link

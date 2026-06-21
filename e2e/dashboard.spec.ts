@@ -40,22 +40,22 @@ test.describe('Dashboard autenticado', () => {
   })
 
   test('copia o link ao clicar no botão copiar', async ({ page }) => {
-  // Cria um link para garantir que existe pelo menos um na lista
-  await page.getByRole('button', { name: /Novo Link/i }).click()
+    // Cria um link para garantir que existe pelo menos um na lista
+    await page.getByRole('button', { name: /Novo Link/i }).click()
 
-  const slug = `e2e-copy-${Date.now()}`
-  await page.getByPlaceholder('https://exemplo.com/url-muito-longa').fill('https://www.exemplo-copy-test.com')
-  await page.getByPlaceholder('Slug personalizado (opcional)').fill(slug)
-  await page.getByRole('button', { name: 'Encurtar' }).click()
+    const slug = `e2e-copy-${Date.now()}`
+    await page.getByPlaceholder('https://exemplo.com/url-muito-longa').fill('https://www.exemplo-copy-test.com')
+    await page.getByPlaceholder('Slug personalizado (opcional)').fill(slug)
+    await page.getByRole('button', { name: 'Encurtar' }).click()
 
-  // Espera o link aparecer
-  const newCard = page.locator('.space-y-3 > div').filter({ hasText: slug })
-  await expect(newCard).toBeVisible({ timeout: 10000 })
+    // Espera o link aparecer
+    const newCard = page.locator('.space-y-3 > div').filter({ hasText: slug })
+    await expect(newCard).toBeVisible({ timeout: 10000 })
 
-  // Clica no botão de copiar desse card específico
-  const copyButton = newCard.getByRole('button').first()
-  await copyButton.click()
+    // Clica no botão de copiar e confirma que o ícone de sucesso aparece
+    const copyButton = newCard.getByRole('button', { name: 'Copiar link' })
+    await copyButton.click()
 
-  await expect(page.getByText('Copiado!')).toBeVisible({ timeout: 3000 })
-})
+    await expect(newCard.getByTestId('copy-success-icon')).toBeVisible({ timeout: 3000 })
+  })
 })
