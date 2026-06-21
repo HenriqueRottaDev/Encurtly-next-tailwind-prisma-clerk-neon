@@ -4,6 +4,7 @@ import { UserRepository, LinkRepository } from '@/lib/repositories'
 import { generateUniqueSlug, isValidSlug } from '@/lib/utils/slug'
 import { z } from 'zod'
 import { checkLinkLimit } from '@/lib/utils/check-limits'
+import bcrypt from 'bcryptjs'
 
 const createLinkSchema = z.object({
   url: z.string().url('URL inválida — certifique-se de incluir http:// ou https://'),
@@ -61,11 +62,14 @@ export async function POST(req: Request) {
 
   const finalSlug = slug ?? await generateUniqueSlug()
 
+  // Hash da senha antes de salvar (nunca armazenar texto puro)
+  const hashedPassword = password ? await bcrypt.hash(password, 10) : null
+
   const link = await LinkRepository.create(user.id, {
     url,
     slug: finalSlug,
     title,
-    password,
+    password: hashedPassword,
     expiresAt: expiresAt ? new Date(expiresAt) : null,
     maxClicks,
   })

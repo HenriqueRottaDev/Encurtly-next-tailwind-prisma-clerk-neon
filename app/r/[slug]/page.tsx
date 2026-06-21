@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { LinkRepository, ClickRepository, UserRepository } from '@/lib/repositories'
 import { extractClickInfo } from '@/lib/utils/click-info'
 import { PasswordForm } from '@/components/links/password-form'
 import { checkClickLimit } from '@/lib/utils/check-limits'
+import { redirectLimiter } from '@/lib/rate-limit'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -10,6 +12,15 @@ interface PageProps {
 
 export default async function LinkPage({ params }: PageProps) {
   const { slug } = await params
+
+  // Rate limit por IP, para evitar flood de cliques automatizados
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for') ?? 'unknown'
+  const { success } = await redirectLimiter.limit(ip)
+
+  if (!success) {
+    redirect('/')
+  }
 
   const link = await LinkRepository.findBySlug(slug)
 

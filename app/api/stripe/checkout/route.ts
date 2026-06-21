@@ -4,6 +4,7 @@ import { stripe } from '@/lib/stripe'
 import { UserRepository } from '@/lib/repositories'
 import { PLANS } from '@/lib/plans'
 import { z } from 'zod'
+import { stripeActionLimiter } from '@/lib/rate-limit'
 
 const checkoutSchema = z.object({
   plan: z.enum(['PRO', 'AGENCY']),
@@ -11,6 +12,13 @@ const checkoutSchema = z.object({
 
 export async function POST(req: Request) {
   const { userId } = await auth()
+  const { success } = await stripeActionLimiter.limit(userId as string)
+  if (!success) {
+    return NextResponse.json(
+      { error: 'Muitas requisições. Aguarde um instante.' },
+      { status: 429 }
+    )
+  }
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const user = await UserRepository.findByClerkId(userId)
