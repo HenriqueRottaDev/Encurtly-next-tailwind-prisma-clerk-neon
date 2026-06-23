@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Plus, Trash2 } from 'lucide-react'
 import { CreateLinkForm } from './create-link-form'
@@ -22,6 +22,8 @@ export function LinksDashboard({ initialData, isPro }: LinksDashboardProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
 
+  const isFirstRender = useRef(true)
+
   const fetchLinks = useCallback(async (p: number, pp: number) => {
     setLoading(true)
     setSelectedIds(new Set())
@@ -35,9 +37,12 @@ export function LinksDashboard({ initialData, isPro }: LinksDashboardProps) {
   }, [])
 
   useEffect(() => {
-    if (page === initialData.page && perPage === initialData.perPage) return
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
     fetchLinks(page, perPage)
-  }, [page, perPage, fetchLinks, initialData.page, initialData.perPage])
+  }, [page, perPage, fetchLinks])
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
