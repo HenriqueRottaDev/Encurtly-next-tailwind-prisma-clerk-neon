@@ -4,105 +4,92 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useMutation } from '@tanstack/react-query'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { LinkWithClickCount } from '@/lib/repositories/link.repository'
 
-async function createLink(data: {
-  url: string
-  slug?: string
-  title?: string
-  password?: string
-  expiresAt?: string
-  maxClicks?: number
-  ctaEnabled?: boolean
-  ctaTitle?: string
-  ctaMessage?: string
-  ctaButtonText?: string
-  ctaButtonUrl?: string
-}) {
-  const res = await fetch('/api/links', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    const err = await res.json()
-    if (typeof err.error === 'object') {
-      const fieldErrors = err.error?.fieldErrors
-      const firstField = fieldErrors ? Object.keys(fieldErrors)[0] : null
-      const firstMessage = firstField ? fieldErrors[firstField]?.[0] : null
-      throw new Error(firstMessage ?? 'Dados inválidos')
-    }
-    throw new Error(err.error || 'Erro ao criar link')
-  }
-  return res.json()
+interface EditLinkFormProps {
+  link: LinkWithClickCount
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
-interface CreateLinkFormProps {
-  onClose: () => void
-}
-
-export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
+export function EditLinkForm({ link, open, onOpenChange }: EditLinkFormProps) {
   const router = useRouter()
-  const [url, setUrl] = useState('')
-  const [slug, setSlug] = useState('')
-  const [title, setTitle] = useState('')
+
+  const [url, setUrl] = useState(link.url)
+  const [slug, setSlug] = useState(link.slug)
+  const [title, setTitle] = useState(link.title ?? '')
   const [password, setPassword] = useState('')
-  const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined)
-  const [maxClicks, setMaxClicks] = useState('')
+  const [removePassword, setRemovePassword] = useState(false)
+  const [expiresAt, setExpiresAt] = useState<Date | undefined>(
+    link.expiresAt ? new Date(link.expiresAt) : undefined
+  )
+  const [maxClicks, setMaxClicks] = useState(link.maxClicks?.toString() ?? '')
   const [showAdvanced, setShowAdvanced] = useState(false)
 
   const [showCta, setShowCta] = useState(false)
-  const [ctaEnabled, setCtaEnabled] = useState(false)
-  const [ctaTitle, setCtaTitle] = useState('')
-  const [ctaMessage, setCtaMessage] = useState('')
-  const [ctaButtonText, setCtaButtonText] = useState('')
-  const [ctaButtonUrl, setCtaButtonUrl] = useState('')
+  const [ctaEnabled, setCtaEnabled] = useState(link.ctaEnabled)
+  const [ctaTitle, setCtaTitle] = useState(link.ctaTitle ?? '')
+  const [ctaMessage, setCtaMessage] = useState(link.ctaMessage ?? '')
+  const [ctaButtonText, setCtaButtonText] = useState(link.ctaButtonText ?? '')
+  const [ctaButtonUrl, setCtaButtonUrl] = useState(link.ctaButtonUrl ?? '')
 
   const mutation = useMutation({
-    mutationFn: createLink,
+    mutationFn: async () => {
+      const res = await fetch(`/api/links/${link.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url,
+          slug,
+          title: title || undefined,
+          password: removePassword ? null : password || undefined,
+          expiresAt: expiresAt ? expiresAt.toISOString() : null,
+          maxClicks: maxClicks ? parseInt(maxClicks) : null,
+          ctaEnabled,
+          ctaTitle: ctaEnabled ? ctaTitle || undefined : undefined,
+          ctaMessage: ctaEnabled ? ctaMessage || undefined : undefined,
+          ctaButtonText: ctaEnabled ? ctaButtonText || undefined : undefined,
+          ctaButtonUrl: ctaEnabled ? ctaButtonUrl || undefined : undefined,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(typeof err.error === 'string' ? err.error : 'Erro ao salvar alterações')
+      }
+      return res.json()
+    },
     onSuccess: () => {
       router.refresh()
-      onClose()
+      onOpenChange(false)
     },
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!url) return
-    mutation.mutate({
-      url,
-      slug: slug || undefined,
-      title: title || undefined,
-      password: password || undefined,
-      expiresAt: expiresAt ? expiresAt.toISOString() : undefined,
-      maxClicks: maxClicks ? parseInt(maxClicks) : undefined,
-      ctaEnabled,
-      ctaTitle: ctaEnabled ? ctaTitle || undefined : undefined,
-      ctaMessage: ctaEnabled ? ctaMessage || undefined : undefined,
-      ctaButtonText: ctaEnabled ? ctaButtonText || undefined : undefined,
-      ctaButtonUrl: ctaEnabled ? ctaButtonUrl || undefined : undefined,
-    })
+    mutation.mutate()
   }
 
   return (
-    <Card className="border-primary/20">
-      <CardHeader>
-        <CardTitle className="text-base">Encurtar novo link</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Editar link</DialogTitle>
+        </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-3">
-          <Input
-            placeholder="https://exemplo.com/url-muito-longa"
-            value={url}
-            onChange={e => setUrl(e.target.value)}
-            required
-          />
+          <Input value={url} onChange={e => setUrl(e.target.value)} required />
           <div className="flex gap-2">
             <Input
-              placeholder="Slug personalizado (opcional)"
+              placeholder="Slug"
               value={slug}
               onChange={e => setSlug(e.target.value)}
             />
@@ -131,10 +118,21 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
                   </label>
                   <Input
                     type="password"
-                    placeholder="Deixe vazio para não proteger"
+                    placeholder={link.password ? 'Deixe vazio para manter a atual' : 'Sem senha'}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
+                    disabled={removePassword}
                   />
+                  {link.password && (
+                    <label className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+                      <input
+                        type="checkbox"
+                        checked={removePassword}
+                        onChange={e => setRemovePassword(e.target.checked)}
+                      />
+                      Remover senha
+                    </label>
+                  )}
                 </div>
                 <div className="flex-1">
                   <label className="text-xs text-muted-foreground mb-1 block">
@@ -142,7 +140,6 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
                   </label>
                   <Input
                     type="number"
-                    placeholder="Ex: 100"
                     min={1}
                     value={maxClicks}
                     onChange={e => setMaxClicks(e.target.value)}
@@ -177,14 +174,11 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
                 />
                 Mostrar CTA antes de redirecionar
               </label>
-              <p className="text-xs text-muted-foreground">
-                Se desativado, será exibido um anúncio padrão no lugar do CTA.
-              </p>
 
               {ctaEnabled && (
                 <div className="space-y-3">
                   <Input
-                    placeholder="Título (ex: Me siga no Instagram!)"
+                    placeholder="Título"
                     value={ctaTitle}
                     onChange={e => setCtaTitle(e.target.value)}
                   />
@@ -195,7 +189,7 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
                   />
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Texto do botão (ex: Seguir)"
+                      placeholder="Texto do botão"
                       value={ctaButtonText}
                       onChange={e => setCtaButtonText(e.target.value)}
                     />
@@ -211,30 +205,20 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
           )}
 
           {mutation.error && (
-            <div className="space-y-2">
-              <p className="text-sm text-destructive">{mutation.error.message}</p>
-              {mutation.error.message.includes('limite') && (
-                <Button size="sm" variant="outline" asChild>
-                  <a href="/pricing">Ver planos</a>
-                </Button>
-              )}
-            </div>
+            <p className="text-sm text-destructive">{mutation.error.message}</p>
           )}
 
-          <div className="flex gap-2">
-            <Button
-              type="submit"
-              disabled={mutation.isPending}
-              className="bg-primary hover:bg-primary/90"
-            >
-              {mutation.isPending ? 'Encurtando...' : 'Encurtar'}
-            </Button>
-            <Button type="button" variant="outline" onClick={onClose}>
+          <div className="flex gap-2 justify-end pt-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
+            </Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Salvar alterações
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   )
 }

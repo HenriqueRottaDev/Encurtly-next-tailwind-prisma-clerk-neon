@@ -63,6 +63,14 @@ model Link {
   disabled    Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  redirectRules RedirectRule[]
+
+  // CTA overlay (Fase 4)
+  ctaEnabled    Boolean @default(false)
+  ctaTitle      String?
+  ctaMessage    String?
+  ctaButtonText String?
+  ctaButtonUrl  String?
 
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
@@ -71,6 +79,16 @@ model Link {
 
   clicks      Click[]
   tags        TagOnLink[]
+}
+
+model RedirectRule {
+  id        String  @id @default(cuid())
+  type      String  // "country" | "device" | "time"
+  condition String  // "BR" | "mobile" | "08:00-18:00"
+  url       String
+  order     Int     @default(0)
+  linkId    String
+  link      Link    @relation(fields: [linkId], references: [id], onDelete: Cascade)
 }
 
 // ─── CLIQUE / ANALYTICS ────────────────────────────────

@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { UserRepository, LinkRepository } from '@/lib/repositories'
 import { generateUniqueSlug, isValidSlug } from '@/lib/utils/slug'
 import { z } from 'zod'
@@ -13,17 +13,28 @@ const createLinkSchema = z.object({
   password: z.string().optional(),
   expiresAt: z.string().datetime('Data de expiração inválida').optional(),
   maxClicks: z.number().int().positive('Máximo de cliques deve ser um número positivo').optional(),
+  ctaEnabled: z.boolean().optional(),
+  ctaTitle: z.string().max(100).optional(),
+  ctaMessage: z.string().max(300).optional(),
+  ctaButtonText: z.string().max(50).optional(),
+  ctaButtonUrl: z.string().url('URL do botão inválida').optional(),
 })
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const user = await UserRepository.findByClerkId(userId)
-  if (!user) return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const links = await LinkRepository.findByUserId(user.id)
-  return NextResponse.json(links)
+  const sp = req.nextUrl.searchParams
+  const page = Math.max(1, Number(sp.get('page') ?? '1'))
+  const perPage = [10, 50, 100].includes(Number(sp.get('perPage')))
+    ? Number(sp.get('perPage'))
+    : 10
+
+  const result = await LinkRepository.findByUserIdPaginated(user.id, page, perPage)
+  return NextResponse.json(result)
 }
 
 export async function POST(req: Request) {
@@ -48,7 +59,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
   }
 
-  const { url, slug, title, password, expiresAt, maxClicks } = parsed.data
+  const { url, slug, title, password, expiresAt, maxClicks, ctaEnabled, ctaTitle, ctaMessage, ctaButtonText, ctaButtonUrl } = parsed.data
+
 
   if (slug) {
     if (!isValidSlug(slug)) {
@@ -72,6 +84,11 @@ export async function POST(req: Request) {
     password: hashedPassword,
     expiresAt: expiresAt ? new Date(expiresAt) : null,
     maxClicks,
+    ctaEnabled: ctaEnabled ?? false,
+    ctaTitle,
+    ctaMessage,
+    ctaButtonText,
+    ctaButtonUrl,
   })
 
   return NextResponse.json(link, { status: 201 })

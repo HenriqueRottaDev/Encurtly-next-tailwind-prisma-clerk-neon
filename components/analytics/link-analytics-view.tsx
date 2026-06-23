@@ -5,6 +5,9 @@ import { ArrowLeft, MousePointerClick, Globe, Smartphone, Compass, ExternalLink 
 import { ClicksChart } from './clicks-chart'
 import { BreakdownChart } from './breakdown-chart'
 import type { LinkAnalytics } from '@/lib/repositories/click.repository'
+import { AiInsights } from '../links/ai-insights'
+
+import { RedirectRules } from '@/components/links/redirect-rules'
 
 interface LinkAnalyticsViewProps {
   link: {
@@ -15,9 +18,10 @@ interface LinkAnalyticsViewProps {
     disabled: boolean
   }
   analytics: LinkAnalytics
+  isPro: boolean
 }
 
-export function LinkAnalyticsView({ link, analytics }: LinkAnalyticsViewProps) {
+export function LinkAnalyticsView({ link, analytics, isPro }: LinkAnalyticsViewProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -68,6 +72,11 @@ export function LinkAnalyticsView({ link, analytics }: LinkAnalyticsViewProps) {
           <ClicksChart data={analytics.clicksByDay} />
         </CardContent>
       </Card>
+
+      {/* AI Insights */}
+      <AiInsights linkId={link.id} days={30} isPro={isPro} />
+
+      <RedirectRules linkId={link.id} isPro={isPro} />
 
       {/* Grid de breakdowns */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

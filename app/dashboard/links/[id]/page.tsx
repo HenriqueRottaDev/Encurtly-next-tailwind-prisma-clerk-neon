@@ -21,5 +21,5 @@ export default async function LinkAnalyticsPage({ params }: PageProps) {
 
   const analytics = await ClickRepository.getLinkAnalytics(id, 30)
 
-  return <LinkAnalyticsView link={link} analytics={analytics} />
+  return <LinkAnalyticsView link={link} analytics={analytics} isPro={user.plan !== 'FREE'} />
 }
