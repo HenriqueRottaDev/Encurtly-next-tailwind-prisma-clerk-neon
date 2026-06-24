@@ -4,6 +4,8 @@ import { UserRepository, LinkRepository } from '@/lib/repositories'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 
+import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
+
 const updateLinkSchema = z.object({
   disabled: z.boolean().optional(),
   title: z.string().max(100).optional(),
@@ -19,6 +21,15 @@ const updateLinkSchema = z.object({
   ctaButtonUrl: z.string().url().optional().nullable(),
 })
 
+async function canAccessLink(link: { userId: string; workspaceId: string | null }, userId: string) {
+  if (link.userId === userId) return { allowed: true, role: 'ADMIN' }
+  if (link.workspaceId) {
+    const member = await WorkspaceRepository.getMember(link.workspaceId, userId)
+    if (member) return { allowed: true, role: member.role }
+  }
+  return { allowed: false, role: null }
+}
+
 // PATCH — atualizar/pausar link
 export async function PATCH(
   req: Request,
@@ -33,9 +44,10 @@ export async function PATCH(
   const { id } = await params
   const link = await LinkRepository.findById(id)
 
-  if (!link || link.userId !== user.id) {
-    return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
-  }
+  if (!link) return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
+  const access = await canAccessLink(link, user.id)
+  if (!access.allowed) return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
+  if (access.role === 'VIEWER') return NextResponse.json({ error: 'Sem permissão para editar.' }, { status: 403 })
 
   const body = await req.json()
   const parsed = updateLinkSchema.safeParse(body)
@@ -86,9 +98,10 @@ export async function DELETE(
   const { id } = await params
   const link = await LinkRepository.findById(id)
 
-  if (!link || link.userId !== user.id) {
-    return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
-  }
+  if (!link) return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
+  const accessDel = await canAccessLink(link, user.id)
+  if (!accessDel.allowed) return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
+  if (accessDel.role !== 'ADMIN') return NextResponse.json({ error: 'Apenas admins podem deletar links.' }, { status: 403 })
 
   await LinkRepository.delete(id)
   return NextResponse.json({ success: true })

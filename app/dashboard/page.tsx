@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { UserRepository, LinkRepository } from '@/lib/repositories'
+import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
 import { LinksDashboard } from '@/components/links/links-dashboard'
 import { PlanUsage } from '@/components/dashboard/plan-usage'
 import { BulkUpload } from '@/components/links/bulk-upload'
@@ -14,6 +15,16 @@ export default async function DashboardPage() {
   if (!user) redirect('/sign-in')
 
   const initialData = await LinkRepository.findByUserIdPaginated(user.id, 1, 10)
+
+  // Top link de cada workspace que o usuário pertence
+  const workspaces = await WorkspaceRepository.findByUserId(user.id)
+  const workspaceTopLinks = await Promise.all(
+    workspaces.map(async (ws) => {
+      const link = await WorkspaceRepository.findTopLinkByWorkspaceId(ws.id)
+      return link ? { ...link, workspaceName: ws.name, workspaceId: ws.id } : null
+    })
+  )
+  const filteredTopLinks = workspaceTopLinks.filter((l): l is NonNullable<typeof l> => l !== null)
 
   const startOfMonth = new Date()
   startOfMonth.setDate(1)
@@ -35,7 +46,12 @@ export default async function DashboardPage() {
         cancelAtPeriodEnd={user.stripeCancelAtPeriodEnd}
         currentPeriodEnd={user.stripeCurrentPeriodEnd}
       />
-      <LinksDashboard initialData={initialData} isPro={user.plan !== 'FREE'} />
+      <LinksDashboard
+        initialData={initialData}
+        isPro={user.plan !== 'FREE'}
+        workspaceTopLinks={filteredTopLinks}
+        userWorkspaces={workspaces.map((ws) => ({ id: ws.id, name: ws.name }))}
+      />
       <BulkUpload isPro={user.plan !== 'FREE'} />
     </div>
   )

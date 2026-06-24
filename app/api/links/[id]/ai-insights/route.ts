@@ -2,11 +2,11 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Redis } from "@upstash/redis";
-import { LinkRepository } from "@/lib/repositories"; 
-import { ClickRepository } from "@/lib/repositories/click.repository"; 
+import { LinkRepository } from "@/lib/repositories";
+import { ClickRepository } from "@/lib/repositories/click.repository";
 import { UserRepository } from "@/lib/repositories";
 import type { GroupedCount, ClicksByDay } from "@/lib/repositories/click.repository";
-
+import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
@@ -87,15 +87,23 @@ export async function GET(
   if (!link) return NextResponse.json({ error: "Link not found" }, { status: 404 });
 
   const user = await UserRepository.findByClerkId(userId);
-  if (!user || link.userId !== user.id)
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  // Plano check
-  if (user.plan === "FREE") {
-    return NextResponse.json(
-      { error: "AI insights disponível nos planos Pro e Agência." },
-      { status: 403 }
-    );
+  if (link.userId !== user.id) {
+    if (!link.workspaceId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const member = await WorkspaceRepository.getMember(link.workspaceId, user.id);
+    if (!member) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // plano check contra o dono do link, não o membro
+  if (!link.workspaceId) {
+    const linkOwner = await UserRepository.findById(link.userId);
+    if (!linkOwner || linkOwner.plan === "FREE") {
+      return NextResponse.json(
+        { error: "AI insights disponível nos planos Pro e Agência." },
+        { status: 403 }
+      );
+    }
   }
 
   const cacheKey = `ai-insights:${id}:${days}`;

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useMutation } from '@tanstack/react-query'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { FieldTooltip } from '@/components/ui/field-tooltip'
 
 async function createLink(data: {
   url: string
@@ -21,6 +22,7 @@ async function createLink(data: {
   ctaMessage?: string
   ctaButtonText?: string
   ctaButtonUrl?: string
+  workspaceId?: string
 }) {
   const res = await fetch('/api/links', {
     method: 'POST',
@@ -42,9 +44,10 @@ async function createLink(data: {
 
 interface CreateLinkFormProps {
   onClose: () => void
+  workspaceId?: string
 }
 
-export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
+export function CreateLinkForm({ onClose, workspaceId }: CreateLinkFormProps) {
   const router = useRouter()
   const [url, setUrl] = useState('')
   const [slug, setSlug] = useState('')
@@ -53,7 +56,6 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined)
   const [maxClicks, setMaxClicks] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
-
   const [showCta, setShowCta] = useState(false)
   const [ctaEnabled, setCtaEnabled] = useState(false)
   const [ctaTitle, setCtaTitle] = useState('')
@@ -84,6 +86,7 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
       ctaMessage: ctaEnabled ? ctaMessage || undefined : undefined,
       ctaButtonText: ctaEnabled ? ctaButtonText || undefined : undefined,
       ctaButtonUrl: ctaEnabled ? ctaButtonUrl || undefined : undefined,
+      workspaceId: workspaceId || undefined,
     })
   }
 
@@ -100,17 +103,30 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
             onChange={e => setUrl(e.target.value)}
             required
           />
+
           <div className="flex gap-2">
-            <Input
-              placeholder="Slug personalizado (opcional)"
-              value={slug}
-              onChange={e => setSlug(e.target.value)}
-            />
-            <Input
-              placeholder="Título (opcional)"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-            />
+            <div className="flex-1">
+              <label className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                Slug personalizado
+                <FieldTooltip content="Parte final da URL encurtada. Ex: /r/meu-link. Use letras, números, hífens e underscores (3-50 caracteres). Se deixar em branco, será gerado automaticamente." />
+              </label>
+              <Input
+                placeholder="meu-link (opcional)"
+                value={slug}
+                onChange={e => setSlug(e.target.value)}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                Título
+                <FieldTooltip content="Nome interno para identificar o link no seu dashboard. Não aparece para quem clica." />
+              </label>
+              <Input
+                placeholder="Título (opcional)"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+              />
+            </div>
           </div>
 
           <button
@@ -126,8 +142,9 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
             <div className="space-y-3 pt-1 border-t border-border">
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <label className="text-xs text-muted-foreground mb-1 block">
+                  <label className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                     Senha de acesso
+                    <FieldTooltip content="Quem clicar no link precisará digitar esta senha antes de ser redirecionado. Útil para conteúdo exclusivo." />
                   </label>
                   <Input
                     type="password"
@@ -137,8 +154,9 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-xs text-muted-foreground mb-1 block">
+                  <label className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                     Máximo de cliques
+                    <FieldTooltip content="O link para de funcionar após atingir este número de cliques. Útil para ofertas limitadas." />
                   </label>
                   <Input
                     type="number"
@@ -150,8 +168,9 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
                 </div>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">
+                <label className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                   Data de expiração
+                  <FieldTooltip content="Após esta data e hora, o link deixa de funcionar e redireciona para a página inicial." />
                 </label>
                 <DateTimePicker value={expiresAt} onChange={setExpiresAt} />
               </div>
@@ -165,6 +184,7 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
           >
             {showCta ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             CTA personalizado (plano Free)
+            <FieldTooltip content="Usuários Free veem uma página intermediária antes do redirecionamento. Você pode personalizar essa página com uma mensagem e botão próprios." />
           </button>
 
           {showCta && (
@@ -180,7 +200,6 @@ export function CreateLinkForm({ onClose }: CreateLinkFormProps) {
               <p className="text-xs text-muted-foreground">
                 Se desativado, será exibido um anúncio padrão no lugar do CTA.
               </p>
-
               {ctaEnabled && (
                 <div className="space-y-3">
                   <Input

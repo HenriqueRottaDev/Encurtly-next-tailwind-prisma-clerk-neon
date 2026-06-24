@@ -29,6 +29,7 @@ export type CreateLinkDto = {
   ctaMessage?: string | null
   ctaButtonText?: string | null
   ctaButtonUrl?: string | null
+  workspaceId?: string | null
 }
 
 export class LinkRepository {
@@ -80,19 +81,24 @@ export class LinkRepository {
   static async findByUserIdPaginated(
     userId: string,
     page: number = 1,
-    perPage: number = 10
+    perPage: number = 10,
+    includeWorkspaceIds: string[] = []
   ): Promise<PaginatedLinks> {
     const skip = (page - 1) * perPage
 
+    const workspaceFilter = includeWorkspaceIds.length > 0
+      ? { OR: [{ workspaceId: null }, { workspaceId: { in: includeWorkspaceIds } }] }
+      : { workspaceId: null }
+
     const [links, total] = await Promise.all([
       prisma.link.findMany({
-        where: { userId },
+        where: { userId, ...workspaceFilter },
         orderBy: { createdAt: 'desc' },
         include: { _count: { select: { clicks: true } } },
         skip,
         take: perPage,
       }),
-      prisma.link.count({ where: { userId } }),
+      prisma.link.count({ where: { userId, ...workspaceFilter } }),
     ])
 
     return {

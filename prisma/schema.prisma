@@ -23,6 +23,7 @@ model User {
 
   links      Link[]
   workspaces WorkspaceMember[]
+  customDomain CustomDomain?
 }
 
 // ─── WORKSPACE (espaço de trabalho) ────────────────────
@@ -35,6 +36,8 @@ model Workspace {
 
   links     Link[]
   members   WorkspaceMember[]
+  invites   WorkspaceInvite[]
+  customDomain CustomDomain?
 }
 
 model WorkspaceMember {
@@ -48,6 +51,19 @@ model WorkspaceMember {
   workspaceId String
 
   @@unique([userId, workspaceId])
+}
+
+model WorkspaceInvite {
+  id          String   @id @default(cuid())
+  token       String   @unique @default(cuid())
+  email       String?
+  role        Role     @default(VIEWER)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
 }
 
 // ─── LINK ──────────────────────────────────────────────
@@ -145,4 +161,17 @@ enum Role {
   ADMIN
   EDITOR
   VIEWER
+}
+
+model CustomDomain {
+  id          String   @id @default(cuid())
+  domain      String   @unique
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId      String?  @unique
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String?  @unique
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }

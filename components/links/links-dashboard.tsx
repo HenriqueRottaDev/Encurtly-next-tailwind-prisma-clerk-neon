@@ -2,18 +2,37 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Plus, Trash2 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Plus, Trash2, Building2, ChevronRight } from 'lucide-react'
 import { CreateLinkForm } from './create-link-form'
 import { LinkCard } from './link-card'
 import { PaginationControls } from '@/components/ui/pagination-controls'
 import { LinkWithClickCount, PaginatedLinks } from '@/lib/repositories/link.repository'
+import Link from 'next/link'
+
+interface WorkspaceTopLink extends LinkWithClickCount {
+  workspaceName: string
+  workspaceId: string
+}
+
+interface UserWorkspace {
+  id: string
+  name: string
+}
 
 interface LinksDashboardProps {
   initialData: PaginatedLinks
   isPro: boolean
+  workspaceTopLinks?: WorkspaceTopLink[]
+  userWorkspaces?: UserWorkspace[]
 }
 
-export function LinksDashboard({ initialData, isPro }: LinksDashboardProps) {
+export function LinksDashboard({
+  initialData,
+  isPro,
+  workspaceTopLinks = [],
+  userWorkspaces = [],
+}: LinksDashboardProps) {
   const [showForm, setShowForm] = useState(false)
   const [data, setData] = useState<PaginatedLinks>(initialData)
   const [page, setPage] = useState(initialData.page)
@@ -21,6 +40,7 @@ export function LinksDashboard({ initialData, isPro }: LinksDashboardProps) {
   const [loading, setLoading] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
+  const [hiddenWorkspaces, setHiddenWorkspaces] = useState<Set<string>>(new Set())
 
   const isFirstRender = useRef(true)
 
@@ -60,6 +80,14 @@ export function LinksDashboard({ initialData, isPro }: LinksDashboardProps) {
     }
   }
 
+  function toggleWorkspaceVisibility(wsId: string) {
+    setHiddenWorkspaces((prev) => {
+      const next = new Set(prev)
+      next.has(wsId) ? next.delete(wsId) : next.add(wsId)
+      return next
+    })
+  }
+
   async function handleBulkDelete() {
     if (selectedIds.size === 0) return
     if (!confirm(`Deletar ${selectedIds.size} link(s)? Esta ação não pode ser desfeita.`)) return
@@ -71,15 +99,14 @@ export function LinksDashboard({ initialData, isPro }: LinksDashboardProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: Array.from(selectedIds) }),
       })
-      if (res.ok) {
-        await fetchLinks(page, perPage)
-      }
+      if (res.ok) await fetchLinks(page, perPage)
     } finally {
       setDeleting(false)
     }
   }
 
   const allSelected = data.links.length > 0 && selectedIds.size === data.links.length
+  const visibleWorkspaceLinks = workspaceTopLinks.filter((l) => !hiddenWorkspaces.has(l.workspaceId))
 
   return (
     <div className="space-y-4">
@@ -87,9 +114,7 @@ export function LinksDashboard({ initialData, isPro }: LinksDashboardProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Meus Links</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Gerencie e acompanhe seus links encurtados
-          </p>
+          <p className="text-sm text-slate-500 mt-1">Gerencie e acompanhe seus links encurtados</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)} className="bg-violet-600 hover:bg-violet-700">
           <Plus className="w-4 h-4 mr-2" />
@@ -98,6 +123,63 @@ export function LinksDashboard({ initialData, isPro }: LinksDashboardProps) {
       </div>
 
       {showForm && <CreateLinkForm onClose={() => { setShowForm(false); fetchLinks(page, perPage) }} />}
+
+      {/* Filtro de workspaces */}
+      {userWorkspaces.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-muted-foreground">Workspaces:</span>
+          {userWorkspaces.map((ws) => {
+            const hidden = hiddenWorkspaces.has(ws.id)
+            return (
+              <button
+                key={ws.id}
+                onClick={() => toggleWorkspaceVisibility(ws.id)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ${hidden
+                    ? 'border-muted bg-muted/30 text-muted-foreground'
+                    : 'border-violet-300 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-400'
+                  }`}
+              >
+                <Building2 className="h-3 w-3" />
+                {ws.name}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Top links de workspaces */}
+      {visibleWorkspaceLinks.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Destaque por workspace
+          </p>
+          {visibleWorkspaceLinks.map((link) => (
+            <div key={link.id} className="relative">
+              <div className="absolute -top-2 left-3 z-10">
+                <Badge className="bg-violet-600 text-white text-[10px] px-1.5 py-0 h-4 gap-1">
+                  <Building2 className="h-2.5 w-2.5" />
+                  {link.workspaceName}
+                </Badge>
+              </div>
+              <div className="pt-2">
+                <LinkCard
+                  link={link}
+                  selected={selectedIds.has(link.id)}
+                  onToggle={toggleSelect}
+                />
+              </div>
+              <Link
+                href={`/dashboard/workspaces/${link.workspaceId}`}
+                className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                Ver todos os links deste workspace
+                <ChevronRight className="h-3 w-3" />
+              </Link>
+            </div>
+          ))}
+          <div className="border-t pt-2" />
+        </div>
+      )}
 
       {/* Barra de seleção */}
       {data.links.length > 0 && (
@@ -131,9 +213,7 @@ export function LinksDashboard({ initialData, isPro }: LinksDashboardProps) {
           ))}
         </div>
       ) : data.links.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-8 text-center">
-          Nenhum link encontrado.
-        </p>
+        <p className="text-sm text-muted-foreground py-8 text-center">Nenhum link encontrado.</p>
       ) : (
         <div className="space-y-3">
           {data.links.map((link) => (

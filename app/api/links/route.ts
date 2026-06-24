@@ -18,6 +18,7 @@ const createLinkSchema = z.object({
   ctaMessage: z.string().max(300).optional(),
   ctaButtonText: z.string().max(50).optional(),
   ctaButtonUrl: z.string().url('URL do botão inválida').optional(),
+  workspaceId: z.string().optional(),
 })
 
 export async function GET(req: NextRequest) {
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
   }
 
-  const { url, slug, title, password, expiresAt, maxClicks, ctaEnabled, ctaTitle, ctaMessage, ctaButtonText, ctaButtonUrl } = parsed.data
+  const { url, slug, title, password, expiresAt, maxClicks, ctaEnabled, ctaTitle, ctaMessage, ctaButtonText, ctaButtonUrl, workspaceId } = parsed.data
 
 
   if (slug) {
@@ -89,6 +90,7 @@ export async function POST(req: Request) {
     ctaMessage,
     ctaButtonText,
     ctaButtonUrl,
+    workspaceId: workspaceId ?? null,
   })
 
   return NextResponse.json(link, { status: 201 })

@@ -31,11 +31,11 @@ export const PLANS = {
   AGENCY: {
     name: 'Agência',
     maxLinks: Infinity,
-    maxClicks: 100000,
+    maxClicks: 250000,
     stripePriceId: process.env.STRIPE_AGENCY_PRICE_ID!,
     features: [
       'Links ilimitados',
-      '100.000 cliques rastreados/mês',
+      '250.000 cliques rastreados/mês',
       '10 domínios personalizados',
       'Múltiplos workspaces',
       'Times com permissões',

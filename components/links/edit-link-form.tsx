@@ -13,6 +13,7 @@ import {
 import { useMutation } from '@tanstack/react-query'
 import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { FieldTooltip } from '@/components/ui/field-tooltip'
 import { LinkWithClickCount } from '@/lib/repositories/link.repository'
 
 interface EditLinkFormProps {
@@ -87,17 +88,29 @@ export function EditLinkForm({ link, open, onOpenChange }: EditLinkFormProps) {
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <Input value={url} onChange={e => setUrl(e.target.value)} required />
+
           <div className="flex gap-2">
-            <Input
-              placeholder="Slug"
-              value={slug}
-              onChange={e => setSlug(e.target.value)}
-            />
-            <Input
-              placeholder="Título (opcional)"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-            />
+            <div className="flex-1">
+              <label className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                Slug
+                <FieldTooltip content="Parte final da URL encurtada. Ex: /r/meu-link. Use letras, números, hífens e underscores (3-50 caracteres)." />
+              </label>
+              <Input
+                value={slug}
+                onChange={e => setSlug(e.target.value)}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                Título
+                <FieldTooltip content="Nome interno para identificar o link no seu dashboard. Não aparece para quem clica." />
+              </label>
+              <Input
+                placeholder="Título (opcional)"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+              />
+            </div>
           </div>
 
           <button
@@ -113,8 +126,9 @@ export function EditLinkForm({ link, open, onOpenChange }: EditLinkFormProps) {
             <div className="space-y-3 pt-1 border-t border-border">
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <label className="text-xs text-muted-foreground mb-1 block">
+                  <label className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                     Senha de acesso
+                    <FieldTooltip content="Quem clicar no link precisará digitar esta senha antes de ser redirecionado. Deixe vazio para manter a senha atual." />
                   </label>
                   <Input
                     type="password"
@@ -135,8 +149,9 @@ export function EditLinkForm({ link, open, onOpenChange }: EditLinkFormProps) {
                   )}
                 </div>
                 <div className="flex-1">
-                  <label className="text-xs text-muted-foreground mb-1 block">
+                  <label className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                     Máximo de cliques
+                    <FieldTooltip content="O link para de funcionar após atingir este número de cliques. Útil para ofertas limitadas." />
                   </label>
                   <Input
                     type="number"
@@ -147,8 +162,9 @@ export function EditLinkForm({ link, open, onOpenChange }: EditLinkFormProps) {
                 </div>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">
+                <label className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                   Data de expiração
+                  <FieldTooltip content="Após esta data e hora, o link deixa de funcionar e redireciona para a página inicial." />
                 </label>
                 <DateTimePicker value={expiresAt} onChange={setExpiresAt} />
               </div>
@@ -162,6 +178,7 @@ export function EditLinkForm({ link, open, onOpenChange }: EditLinkFormProps) {
           >
             {showCta ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             CTA personalizado (plano Free)
+            <FieldTooltip content="Usuários Free veem uma página intermediária antes do redirecionamento. Você pode personalizar essa página com uma mensagem e botão próprios." />
           </button>
 
           {showCta && (

@@ -1,6 +1,8 @@
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 
+import { Toaster } from '@/components/ui/sonner'
+
 export default function DashboardLayout({
   children,
 }: {
@@ -32,6 +34,18 @@ export default function DashboardLayout({
             >
               Planos
             </Link>
+            <Link
+              href="/dashboard/workspaces"
+              className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            >
+              Workspaces
+            </Link>
+            <Link
+              href="/dashboard/settings"
+              className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            >
+              Configurações
+            </Link>
             <div className="ml-2">
               <UserButton />
             </div>
@@ -41,6 +55,7 @@ export default function DashboardLayout({
       <main className="max-w-6xl mx-auto px-4 py-8">
         {children}
       </main>
+      <Toaster />
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { UserRepository, LinkRepository } from '@/lib/repositories'
 import QRCode from 'qrcode'
+import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
 
 export async function GET(
   req: Request,
@@ -16,8 +17,11 @@ export async function GET(
   const { id } = await params
   const link = await LinkRepository.findById(id)
 
-  if (!link || link.userId !== user.id) {
-    return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
+  if (!link) return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
+  if (link.userId !== user.id) {
+    if (!link.workspaceId) return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
+    const member = await WorkspaceRepository.getMember(link.workspaceId, user.id)
+    if (!member) return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
   }
 
   const url = `${process.env.NEXT_PUBLIC_APP_URL}/r/${link.slug}`

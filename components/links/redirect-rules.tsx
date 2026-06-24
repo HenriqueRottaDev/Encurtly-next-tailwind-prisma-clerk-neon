@@ -14,6 +14,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
+import { FieldTooltip } from '@/components/ui/field-tooltip'
+
 interface RedirectRule {
   id: string
   type: 'country' | 'device' | 'time'
@@ -145,7 +147,12 @@ export function RedirectRules({ linkId, isPro }: RedirectRulesProps) {
           <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
             <p className="text-sm font-medium">Nova regra</p>
 
+
             {/* Tipo */}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+              Tipo de regra
+              <FieldTooltip content="Define o que será verificado para redirecionar: país de origem do visitante, tipo de dispositivo (celular/desktop) ou horário do acesso (em UTC)." />
+            </div>
             <Select value={newType} onValueChange={(v) => { setNewType(v as typeof newType); setNewCondition('') }}>
               <SelectTrigger className="h-9">
                 <SelectValue />
@@ -186,11 +193,23 @@ export function RedirectRules({ linkId, isPro }: RedirectRulesProps) {
               </Select>
             )}
 
+            <div className="flex items-center gap-1 text-sm font-medium mb-1.5">
+              Tipo de regra
+              <FieldTooltip content="Define o que será verificado para redirecionar: país de origem do visitante, tipo de dispositivo (celular/desktop) ou horário do acesso (em UTC)." />
+            </div>
+
+
             {newType === 'time' && (
-              <div className="flex items-center gap-2">
-                <Input type="time" value={timeStart} onChange={(e) => setTimeStart(e.target.value)} className="h-9" />
-                <span className="text-sm text-muted-foreground">até</span>
-                <Input type="time" value={timeEnd} onChange={(e) => setTimeEnd(e.target.value)} className="h-9" />
+              <div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                  Intervalo de horário
+                  <FieldTooltip content="Horário em UTC (Brasília = UTC-3). Ex: para redirecionar entre 9h e 18h no Brasil, use 12:00-21:00. Suporta intervalos que passam da meia-noite (ex: 22:00-06:00)." />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input type="time" value={timeStart} onChange={(e) => setTimeStart(e.target.value)} className="h-9" />
+                  <span className="text-sm text-muted-foreground">até</span>
+                  <Input type="time" value={timeEnd} onChange={(e) => setTimeEnd(e.target.value)} className="h-9" />
+                </div>
               </div>
             )}
 

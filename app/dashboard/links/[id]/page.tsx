@@ -1,7 +1,8 @@
 import { auth } from '@clerk/nextjs/server'
 import { redirect, notFound } from 'next/navigation'
 import { UserRepository, LinkRepository, ClickRepository } from '@/lib/repositories'
-import { LinkAnalyticsView } from '@/components/analytics/link-analytics-view' 
+import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
+import { LinkAnalyticsView } from '@/components/analytics/link-analytics-view'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -17,9 +18,24 @@ export default async function LinkAnalyticsPage({ params }: PageProps) {
   const { id } = await params
   const link = await LinkRepository.findById(id)
 
-  if (!link || link.userId !== user.id) notFound()
+  if (!link) notFound()
+
+  // Verifica acesso — dono ou membro do workspace
+  if (link.userId !== user.id) {
+    if (!link.workspaceId) notFound()
+    const member = await WorkspaceRepository.getMember(link.workspaceId, user.id)
+    if (!member) notFound()
+  }
 
   const analytics = await ClickRepository.getLinkAnalytics(id, 30)
 
-  return <LinkAnalyticsView link={link} analytics={analytics} isPro={user.plan !== 'FREE'} />
+  const isWorkspaceLink = !!link.workspaceId
+
+  return (
+    <LinkAnalyticsView
+      link={link}
+      analytics={analytics}
+      isPro={user.plan !== 'FREE' || isWorkspaceLink}
+    />
+  )
 }

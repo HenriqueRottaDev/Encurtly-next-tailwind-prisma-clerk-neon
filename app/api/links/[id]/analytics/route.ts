@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { UserRepository, LinkRepository, ClickRepository } from '@/lib/repositories'
+import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
 
 export async function GET(
   req: Request,
@@ -15,8 +16,11 @@ export async function GET(
   const { id } = await params
   const link = await LinkRepository.findById(id)
 
-  if (!link || link.userId !== user.id) {
-    return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
+  if (!link) return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
+  if (link.userId !== user.id) {
+    if (!link.workspaceId) return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
+    const member = await WorkspaceRepository.getMember(link.workspaceId, user.id)
+    if (!member) return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
   }
 
   const { searchParams } = new URL(req.url)

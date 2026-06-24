@@ -4,7 +4,21 @@ import { LinkRepository } from '@/lib/repositories'
 import { UserRepository } from '@/lib/repositories'
 import { RedirectRuleRepository } from '@/lib/repositories/redirect-rule.repository'
 
+import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
+
 type Params = { params: Promise<{ id: string }> }
+
+async function getWorkspaceMemberRole(
+  link: { userId: string; workspaceId: string | null },
+  userId: string
+): Promise<string | null> {
+  if (link.userId === userId) return 'ADMIN'
+  if (link.workspaceId) {
+    const member = await WorkspaceRepository.getMember(link.workspaceId, userId)
+    if (member) return member.role
+  }
+  return null
+}
 
 // GET — lista regras do link
 export async function GET(_req: NextRequest, { params }: Params) {
@@ -16,7 +30,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (!link) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const user = await UserRepository.findByClerkId(userId)
-  if (!user || link.userId !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!user) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const role = await getWorkspaceMemberRole(link, user.id)
+  if (!role) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const rules = await RedirectRuleRepository.findByLinkId(id)
   return NextResponse.json(rules)
@@ -32,13 +48,20 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (!link) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const user = await UserRepository.findByClerkId(userId)
-  if (!user || link.userId !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!user) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const role = await getWorkspaceMemberRole(link, user.id)
+  if (!role) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (role === 'VIEWER') return NextResponse.json({ error: 'Sem permissão para criar regras.' }, { status: 403 })
 
-  if (user.plan === 'FREE') {
-    return NextResponse.json(
-      { error: 'Redirect condicional disponível nos planos Pro e Agência.' },
-      { status: 403 }
-    )
+  // plano check contra o dono do link
+  if (!link.workspaceId) {
+    const linkOwner = await UserRepository.findById(link.userId)
+    if (!linkOwner || linkOwner.plan === 'FREE') {
+      return NextResponse.json(
+        { error: 'Redirect condicional disponível nos planos Pro e Agência.' },
+        { status: 403 }
+      )
+    }
   }
 
   const body = await req.json()
