@@ -5,6 +5,8 @@ import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 
 import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
+import { WorkspaceLogRepository } from '@/lib/repositories/workspace-log.repository'
+
 
 const updateLinkSchema = z.object({
   disabled: z.boolean().optional(),
@@ -81,6 +83,15 @@ export async function PATCH(
     ...(expiresAt !== undefined && { expiresAt: expiresAt ? new Date(expiresAt) : null }),
   })
 
+  if (link.workspaceId) {
+    await WorkspaceLogRepository.create({
+      workspaceId: link.workspaceId,
+      userId: user.id,
+      action: 'link.updated',
+      description: `Editou o link /${updated.slug}${updated.title ? ` — "${updated.title}"` : ''}`,
+    })
+  }
+
   return NextResponse.json(updated)
 }
 
@@ -104,5 +115,14 @@ export async function DELETE(
   if (accessDel.role !== 'ADMIN') return NextResponse.json({ error: 'Apenas admins podem deletar links.' }, { status: 403 })
 
   await LinkRepository.delete(id)
+  if (link.workspaceId) {
+    await WorkspaceLogRepository.create({
+      workspaceId: link.workspaceId,
+      userId: user.id,
+      action: 'link.deleted',
+      description: `Deletou o link /${link.slug}${link.title ? ` — "${link.title}"` : ''}`,
+    })
+  }
+
   return NextResponse.json({ success: true })
 }

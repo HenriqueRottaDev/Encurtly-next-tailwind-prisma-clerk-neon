@@ -23,6 +23,7 @@ model User {
 
   links      Link[]
   workspaces WorkspaceMember[]
+  workspaceLogs WorkspaceLog[]
   customDomain CustomDomain?
 }
 
@@ -37,6 +38,7 @@ model Workspace {
   links     Link[]
   members   WorkspaceMember[]
   invites   WorkspaceInvite[]
+  logs WorkspaceLog[]
   customDomain CustomDomain?
 }
 
@@ -64,6 +66,18 @@ model WorkspaceInvite {
 
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String
+}
+
+model WorkspaceLog {
+  id          String   @id @default(cuid())
+  action      String
+  description String
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
 }
 
 // ─── LINK ──────────────────────────────────────────────

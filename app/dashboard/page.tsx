@@ -6,6 +6,7 @@ import { LinksDashboard } from '@/components/links/links-dashboard'
 import { PlanUsage } from '@/components/dashboard/plan-usage'
 import { BulkUpload } from '@/components/links/bulk-upload'
 import { prisma } from '@/lib/prisma'
+import { ReportButtons } from '@/components/reports/report-buttons'
 
 export default async function DashboardPage() {
   const { userId } = await auth()
@@ -33,8 +34,8 @@ export default async function DashboardPage() {
   const linkIds = initialData.links.map((l) => l.id)
   const clicksThisMonth = linkIds.length > 0
     ? await prisma.click.count({
-        where: { linkId: { in: linkIds }, createdAt: { gte: startOfMonth } },
-      })
+      where: { linkId: { in: linkIds }, createdAt: { gte: startOfMonth } },
+    })
     : 0
 
   return (
@@ -46,6 +47,10 @@ export default async function DashboardPage() {
         cancelAtPeriodEnd={user.stripeCancelAtPeriodEnd}
         currentPeriodEnd={user.stripeCurrentPeriodEnd}
       />
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium text-muted-foreground">Relatórios</h2>
+        <ReportButtons plan={user.plan} />
+      </div>
       <LinksDashboard
         initialData={initialData}
         isPro={user.plan !== 'FREE'}

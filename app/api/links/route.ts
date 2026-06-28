@@ -6,6 +6,8 @@ import { z } from 'zod'
 import { checkLinkLimit } from '@/lib/utils/check-limits'
 import bcrypt from 'bcryptjs'
 
+import { WorkspaceLogRepository } from '@/lib/repositories/workspace-log.repository'
+
 import { isUrlMalicious } from '@/lib/services/safe-browsing'
 
 const createLinkSchema = z.object({
@@ -102,6 +104,15 @@ export async function POST(req: Request) {
     ctaButtonUrl,
     workspaceId: workspaceId ?? null,
   })
+
+  if (workspaceId) {
+    await WorkspaceLogRepository.create({
+      workspaceId,
+      userId: user.id,
+      action: 'link.created',
+      description: `Criou o link /${link.slug}${title ? ` — "${title}"` : ''}`,
+    })
+  }
 
   return NextResponse.json(link, { status: 201 })
 }

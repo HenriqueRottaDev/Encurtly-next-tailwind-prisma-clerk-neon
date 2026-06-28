@@ -24,12 +24,16 @@ export default async function WorkspaceDetailPage({ params }: PageProps) {
 
   const initialLinks = await WorkspaceRepository.findLinksByWorkspaceId(id)
 
+  const ownerMember = workspace.members[0]
+  const ownerUser = await UserRepository.findById(ownerMember.userId)
+
   return (
     <WorkspaceDetail
       workspace={workspace}
       currentUserId={user.id}
       currentUserRole={member.role}
       initialLinks={initialLinks}
+      isAgency={ownerUser?.plan === 'AGENCY'}
     />
   )
 }

@@ -22,6 +22,10 @@ import { LinkWithClickCount } from '@/lib/repositories/link.repository'
 
 import { DomainSettings } from '@/components/domains/domain-settings'
 
+import { WorkspaceLogs } from '@/components/workspaces/workspace-logs'
+
+import { ReportButtons } from '@/components/reports/report-buttons'
+
 interface Member {
   userId: string
   role: string
@@ -41,6 +45,7 @@ interface WorkspaceDetailProps {
   currentUserId: string
   currentUserRole: string
   initialLinks: LinkWithClickCount[]
+  isAgency: boolean
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -54,6 +59,7 @@ export function WorkspaceDetail({
   currentUserId,
   currentUserRole,
   initialLinks,
+  isAgency
 }: WorkspaceDetailProps) {
   const router = useRouter()
   const isAdmin = currentUserRole === 'ADMIN'
@@ -388,10 +394,24 @@ export function WorkspaceDetail({
       </Card>
 
       {isAdmin && (
+        <ReportButtons
+          plan={isAgency ? 'AGENCY' : 'PRO'}
+          workspaceId={workspace.id}
+        />
+      )}
+
+      {isAdmin && (
         <DomainSettings
           apiPath={`/api/workspaces/${workspace.id}/domain`}
           plan="AGENCY"
           maxDomains={10}
+        />
+      )}
+      {isAdmin && (
+        <WorkspaceLogs
+          workspaceId={workspace.id}
+          isAgency={isAgency}
+          isAdmin={isAdmin}
         />
       )}
     </div>

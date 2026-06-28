@@ -135,5 +135,171 @@ export class ClickRepository {
     }
   }
 
+  static async getReportDataForUser(userId: string, days: number): Promise<{
+    totalClicks: number
+    topLinks: { slug: string; title: string | null; clicks: number }[]
+    allLinks: { slug: string; title: string | null; clicks: number }[]
+    byCountry: GroupedCount[]
+    byDevice: GroupedCount[]
+    byReferrer: GroupedCount[]
+  }> {
+    const since = new Date()
+    since.setDate(since.getDate() - days)
 
+    const links = await prisma.link.findMany({
+      where: { userId, workspaceId: null },
+      select: { id: true, slug: true, title: true },
+    })
+    const linkIds = links.map((l) => l.id)
+    if (linkIds.length === 0) {
+      return { totalClicks: 0, topLinks: [], allLinks: [], byCountry: [], byDevice: [], byReferrer: [] }
+    }
+
+    const [totalClicks, clicksByLink, allClicksByLink, byCountry, byDevice, byReferrer] = await Promise.all([
+      prisma.click.count({ where: { linkId: { in: linkIds }, createdAt: { gte: since } } }),
+      // top 5
+      prisma.click.groupBy({
+        by: ['linkId'],
+        where: { linkId: { in: linkIds }, createdAt: { gte: since } },
+        _count: { _all: true },
+        orderBy: { _count: { linkId: 'desc' } },
+        take: 5,
+      }),
+      // todos
+      prisma.click.groupBy({
+        by: ['linkId'],
+        where: { linkId: { in: linkIds }, createdAt: { gte: since } },
+        _count: { _all: true },
+        orderBy: { _count: { linkId: 'desc' } },
+      }),
+      prisma.click.groupBy({
+        by: ['country'],
+        where: { linkId: { in: linkIds }, createdAt: { gte: since } },
+        _count: { _all: true },
+        orderBy: { _count: { country: 'desc' } },
+        take: 10,
+      }),
+      prisma.click.groupBy({
+        by: ['device'],
+        where: { linkId: { in: linkIds }, createdAt: { gte: since } },
+        _count: { _all: true },
+        orderBy: { _count: { device: 'desc' } },
+        take: 5,
+      }),
+      prisma.click.groupBy({
+        by: ['referrer'],
+        where: { linkId: { in: linkIds }, createdAt: { gte: since } },
+        _count: { _all: true },
+        orderBy: { _count: { referrer: 'desc' } },
+        take: 10,
+      }),
+    ])
+
+    const linkMap = new Map(links.map((l) => [l.id, l]))
+
+    const topLinks = clicksByLink.map((c) => ({
+      slug: linkMap.get(c.linkId)?.slug ?? c.linkId,
+      title: linkMap.get(c.linkId)?.title ?? null,
+      clicks: c._count._all,
+    }))
+
+    const allLinks = allClicksByLink.map((c) => ({
+      slug: linkMap.get(c.linkId)?.slug ?? c.linkId,
+      title: linkMap.get(c.linkId)?.title ?? null,
+      clicks: c._count._all,
+    }))
+
+    return {
+      totalClicks,
+      topLinks,
+      allLinks,
+      byCountry: byCountry.map((r) => ({ label: r.country ?? 'Desconhecido', count: r._count._all })),
+      byDevice: byDevice.map((r) => ({ label: r.device ?? 'Desconhecido', count: r._count._all })),
+      byReferrer: byReferrer.map((r) => ({ label: r.referrer ?? 'Direto', count: r._count._all })),
+    }
+  }
+
+  static async getReportDataForWorkspace(workspaceId: string, days: number): Promise<{
+    totalClicks: number
+    topLinks: { slug: string; title: string | null; clicks: number }[]
+    allLinks: { slug: string; title: string | null; clicks: number }[]
+    byCountry: GroupedCount[]
+    byDevice: GroupedCount[]
+    byReferrer: GroupedCount[]
+  }> {
+    const since = new Date()
+    since.setDate(since.getDate() - days)
+
+    const links = await prisma.link.findMany({
+      where: { workspaceId },
+      select: { id: true, slug: true, title: true },
+    })
+    const linkIds = links.map((l) => l.id)
+    if (linkIds.length === 0) {
+      return { totalClicks: 0, topLinks: [], allLinks: [], byCountry: [], byDevice: [], byReferrer: [] }
+    }
+
+    const [totalClicks, clicksByLink, allClicksByLink, byCountry, byDevice, byReferrer] = await Promise.all([
+      prisma.click.count({ where: { linkId: { in: linkIds }, createdAt: { gte: since } } }),
+      // top 5
+      prisma.click.groupBy({
+        by: ['linkId'],
+        where: { linkId: { in: linkIds }, createdAt: { gte: since } },
+        _count: { _all: true },
+        orderBy: { _count: { linkId: 'desc' } },
+        take: 5,
+      }),
+      // todos
+      prisma.click.groupBy({
+        by: ['linkId'],
+        where: { linkId: { in: linkIds }, createdAt: { gte: since } },
+        _count: { _all: true },
+        orderBy: { _count: { linkId: 'desc' } },
+      }),
+      prisma.click.groupBy({
+        by: ['country'],
+        where: { linkId: { in: linkIds }, createdAt: { gte: since } },
+        _count: { _all: true },
+        orderBy: { _count: { country: 'desc' } },
+        take: 10,
+      }),
+      prisma.click.groupBy({
+        by: ['device'],
+        where: { linkId: { in: linkIds }, createdAt: { gte: since } },
+        _count: { _all: true },
+        orderBy: { _count: { device: 'desc' } },
+        take: 5,
+      }),
+      prisma.click.groupBy({
+        by: ['referrer'],
+        where: { linkId: { in: linkIds }, createdAt: { gte: since } },
+        _count: { _all: true },
+        orderBy: { _count: { referrer: 'desc' } },
+        take: 10,
+      }),
+    ])
+
+    const linkMap = new Map(links.map((l) => [l.id, l]))
+
+    const topLinks = clicksByLink.map((c) => ({
+      slug: linkMap.get(c.linkId)?.slug ?? c.linkId,
+      title: linkMap.get(c.linkId)?.title ?? null,
+      clicks: c._count._all,
+    }))
+
+    const allLinks = allClicksByLink.map((c) => ({
+      slug: linkMap.get(c.linkId)?.slug ?? c.linkId,
+      title: linkMap.get(c.linkId)?.title ?? null,
+      clicks: c._count._all,
+    }))
+
+    return {
+      totalClicks,
+      topLinks,
+      allLinks,
+      byCountry: byCountry.map((r) => ({ label: r.country ?? 'Desconhecido', count: r._count._all })),
+      byDevice: byDevice.map((r) => ({ label: r.device ?? 'Desconhecido', count: r._count._all })),
+      byReferrer: byReferrer.map((r) => ({ label: r.referrer ?? 'Direto', count: r._count._all })),
+    }
+  }
 }

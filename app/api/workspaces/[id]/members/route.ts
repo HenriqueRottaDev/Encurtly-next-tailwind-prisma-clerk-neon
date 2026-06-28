@@ -4,6 +4,9 @@ import { UserRepository } from '@/lib/repositories'
 import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
 import { Role } from '@prisma/client'
 
+import { WorkspaceLogRepository } from '@/lib/repositories/workspace-log.repository'
+import { UserRepository as UR } from '@/lib/repositories'
+
 type Params = { params: Promise<{ id: string }> }
 
 // PATCH — atualiza role de membro (só ADMIN)
@@ -47,6 +50,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   const updated = await WorkspaceRepository.updateMemberRole(id, targetUserId, role as Role)
+  const targetUser = await UR.findById(targetUserId)
+  await WorkspaceLogRepository.create({
+    workspaceId: id,
+    userId: user.id,
+    action: 'member.role_changed',
+    description: `Alterou o role de ${targetUser?.name || targetUser?.email || targetUserId} para ${role}`,
+  })
+
   return NextResponse.json(updated)
 }
 
@@ -87,5 +98,13 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   }
 
   await WorkspaceRepository.removeMember(id, targetUserId)
+  const removedUser = await UR.findById(targetUserId)
+  await WorkspaceLogRepository.create({
+    workspaceId: id,
+    userId: user.id,
+    action: 'member.removed',
+    description: `Removeu ${removedUser?.name || removedUser?.email || targetUserId} do workspace`,
+  })
+
   return NextResponse.json({ success: true })
 }
