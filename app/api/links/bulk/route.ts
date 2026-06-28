@@ -5,6 +5,8 @@ import { checkLinkLimit } from '@/lib/utils/check-limits'
 import { generateUniqueSlug, isValidSlug } from '@/lib/utils/slug'
 import bcrypt from 'bcryptjs'
 
+import { isUrlMalicious } from '@/lib/services/safe-browsing'
+
 interface CsvRow {
     url: string
     slug?: string
@@ -105,6 +107,12 @@ export async function POST(req: NextRequest) {
             new URL(row.url)
         } catch {
             results.push({ row: rowNum, url: row.url, success: false, error: 'URL inválida.' })
+            continue
+        }
+
+        const malicious = await isUrlMalicious(row.url)
+        if (malicious) {
+            results.push({ row: rowNum, url: row.url, success: false, error: 'URL identificada como maliciosa.' })
             continue
         }
 

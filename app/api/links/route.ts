@@ -6,6 +6,8 @@ import { z } from 'zod'
 import { checkLinkLimit } from '@/lib/utils/check-limits'
 import bcrypt from 'bcryptjs'
 
+import { isUrlMalicious } from '@/lib/services/safe-browsing'
+
 const createLinkSchema = z.object({
   url: z.string().url('URL inválida — certifique-se de incluir http:// ou https://'),
   slug: z.string().min(3, 'Slug deve ter pelo menos 3 caracteres').max(50, 'Slug deve ter no máximo 50 caracteres').optional(),
@@ -58,6 +60,14 @@ export async function POST(req: Request) {
 
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
+  }
+
+  const malicious = await isUrlMalicious(parsed.data.url)
+  if (malicious) {
+    return NextResponse.json(
+      { error: 'Esta URL foi identificada como maliciosa e não pode ser encurtada.' },
+      { status: 422 }
+    )
   }
 
   const { url, slug, title, password, expiresAt, maxClicks, ctaEnabled, ctaTitle, ctaMessage, ctaButtonText, ctaButtonUrl, workspaceId } = parsed.data

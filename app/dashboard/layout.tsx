@@ -1,7 +1,11 @@
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
-
 import { Toaster } from '@/components/ui/sonner'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { NavLink } from '@/components/dashboard/nav-link'
+import {
+  Link2, BarChart3, CreditCard, Building2, Settings,
+} from 'lucide-react'
 
 export default function DashboardLayout({
   children,
@@ -10,51 +14,53 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-white dark:bg-slate-900 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/dashboard" className="font-semibold text-lg tracking-tight text-primary">
+      <header className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+
+          {/* Logo */}
+          <Link
+            href="/dashboard"
+            className="font-semibold text-lg tracking-tight text-primary shrink-0"
+          >
             Encurtly
           </Link>
-          <nav className="flex items-center gap-1">
-            <Link
-              href="/dashboard"
-              className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            >
+
+          {/* Nav */}
+          <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-none">
+            <NavLink href="/dashboard" exact>
+              <Link2 className="h-3.5 w-3.5" />
               Links
-            </Link>
-            <Link
-              href="/dashboard/analytics"
-              className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            >
+            </NavLink>
+            <NavLink href="/dashboard/analytics">
+              <BarChart3 className="h-3.5 w-3.5" />
               Analytics
-            </Link>
-            <Link
-              href="/pricing"
-              className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            >
-              Planos
-            </Link>
-            <Link
-              href="/dashboard/workspaces"
-              className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            >
+            </NavLink>
+            <NavLink href="/dashboard/workspaces">
+              <Building2 className="h-3.5 w-3.5" />
               Workspaces
-            </Link>
-            <Link
-              href="/dashboard/settings"
-              className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            >
+            </NavLink>
+            <NavLink href="/pricing">
+              <CreditCard className="h-3.5 w-3.5" />
+              Planos
+            </NavLink>
+            <NavLink href="/dashboard/settings">
+              <Settings className="h-3.5 w-3.5" />
               Configurações
-            </Link>
-            <div className="ml-2">
-              <UserButton />
-            </div>
+            </NavLink>
           </nav>
+
+          {/* Actions */}
+          <div className="flex items-center gap-1 shrink-0">
+            <ThemeToggle />
+            <UserButton />
+          </div>
         </div>
       </header>
+
       <main className="max-w-6xl mx-auto px-4 py-8">
         {children}
       </main>
+
       <Toaster />
     </div>
   )

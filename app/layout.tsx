@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider afterSignOutUrl="/">
-      <html lang="pt-BR" className="dark">
+      <html lang="pt-BR" suppressHydrationWarning>
         <body className={inter.className}>
           <Providers>
             {children}

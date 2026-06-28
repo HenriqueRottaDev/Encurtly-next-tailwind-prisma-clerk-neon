@@ -102,7 +102,7 @@ export function PricingCards({ currentPlan, isLoggedIn }: PricingCardsProps) {
 
       {/* PRO */}
       <Card className={`relative ${currentPlan === 'PRO' ? 'border-primary/50' : 'border-primary'}`}>
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+        <div className="absolute left-1/2 -translate-x-1/2">
           <Badge className="bg-primary text-primary-foreground">Mais popular</Badge>
         </div>
         <CardHeader>
