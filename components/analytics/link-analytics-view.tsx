@@ -35,7 +35,7 @@ export function LinkAnalyticsView({ link, analytics, isPro }: LinkAnalyticsViewP
         </Link>
         <div className="flex items-center gap-2 flex-wrap">
           <h1 className="text-2xl font-semibold tracking-tight text-primary">
-            /r/{link.slug}
+            {link.slug}
           </h1>
           {link.disabled && <Badge variant="destructive" className="text-xs">Pausado</Badge>}
         </div>

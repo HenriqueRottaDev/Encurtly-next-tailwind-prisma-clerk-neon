@@ -32,7 +32,7 @@ export function LinkCard({ link, selected, onToggle }: LinkCardProps) {
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-medium text-primary text-sm">/r/{link.slug}</span>
+            <span className="font-medium text-primary text-sm">/{link.slug}</span>
             <Badge variant="secondary" className="text-xs">
               {link._count.clicks} {link._count.clicks === 1 ? 'clique' : 'cliques'}
             </Badge>

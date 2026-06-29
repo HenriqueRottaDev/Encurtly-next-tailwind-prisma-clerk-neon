@@ -108,7 +108,7 @@ export function CreateLinkForm({ onClose, workspaceId }: CreateLinkFormProps) {
             <div className="flex-1">
               <label className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                 Slug personalizado
-                <FieldTooltip content="Parte final da URL encurtada. Ex: /r/meu-link. Use letras, números, hífens e underscores (3-50 caracteres). Se deixar em branco, será gerado automaticamente." />
+                <FieldTooltip content="Parte final da URL encurtada. Ex: /meu-link. Use letras, números, hífens e underscores (3-50 caracteres). Se deixar em branco, será gerado automaticamente." />
               </label>
               <Input
                 placeholder="meu-link (opcional)"

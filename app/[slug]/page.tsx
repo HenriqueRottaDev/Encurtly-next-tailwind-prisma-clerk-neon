@@ -9,12 +9,21 @@ import { CtaOverlay } from '@/components/links/cta-overlay'
 import { checkClickLimit } from '@/lib/utils/check-limits'
 import { redirectLimiter } from '@/lib/rate-limit'
 
+const RESERVED_SLUGS = [
+  'dashboard', 'pricing', 'privacy', 'terms',
+  'sign-in', 'sign-up', 'invite', 'r', 'api',
+  'monitoring', 'sentry-example-page',
+]
+
 interface PageProps {
   params: Promise<{ slug: string }>
 }
 
 export default async function LinkPage({ params }: PageProps) {
   const { slug } = await params
+
+  // Slug reservado — não tenta buscar no banco
+  if (RESERVED_SLUGS.includes(slug)) redirect('/')
 
   const headersList = await headers()
   const ip = headersList.get('x-forwarded-for') ?? 'unknown'
@@ -58,10 +67,9 @@ export default async function LinkPage({ params }: PageProps) {
   }
 
   // Plano Pro/Agência — resolve redirect condicional
-  const clickInfo = await extractClickInfo(`https://encurtly.com.br/r/${slug}`)
+  const clickInfo = await extractClickInfo(`${process.env.NEXT_PUBLIC_APP_URL}/${slug}`)
 
   const rules = await RedirectRuleRepository.findByLinkId(link.id)
-
   let finalUrl = link.url
 
   if (rules.length > 0) {

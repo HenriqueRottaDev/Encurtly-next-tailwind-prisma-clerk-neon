@@ -10,6 +10,12 @@ import { WorkspaceLogRepository } from '@/lib/repositories/workspace-log.reposit
 
 import { isUrlMalicious } from '@/lib/services/safe-browsing'
 
+const RESERVED_SLUGS = [
+  'dashboard', 'pricing', 'privacy', 'terms',
+  'sign-in', 'sign-up', 'invite', 'r', 'api',
+  'monitoring', 'sentry-example-page',
+]
+
 const createLinkSchema = z.object({
   url: z.string().url('URL inválida — certifique-se de incluir http:// ou https://'),
   slug: z.string().min(3, 'Slug deve ter pelo menos 3 caracteres').max(50, 'Slug deve ter no máximo 50 caracteres').optional(),
@@ -78,6 +84,10 @@ export async function POST(req: Request) {
   if (slug) {
     if (!isValidSlug(slug)) {
       return NextResponse.json({ error: 'Slug inválido' }, { status: 400 })
+    }
+
+    if (slug && RESERVED_SLUGS.includes(slug)) {
+      return NextResponse.json({ error: 'Este slug é reservado pelo sistema.' }, { status: 400 })
     }
     const existing = await LinkRepository.findBySlug(slug)
     if (existing) {

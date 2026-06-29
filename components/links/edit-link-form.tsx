@@ -93,7 +93,7 @@ export function EditLinkForm({ link, open, onOpenChange }: EditLinkFormProps) {
             <div className="flex-1">
               <label className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                 Slug
-                <FieldTooltip content="Parte final da URL encurtada. Ex: /r/meu-link. Use letras, números, hífens e underscores (3-50 caracteres)." />
+                <FieldTooltip content="Parte final da URL encurtada. Ex: /meu-link. Use letras, números, hífens e underscores (3-50 caracteres)." />
               </label>
               <Input
                 value={slug}

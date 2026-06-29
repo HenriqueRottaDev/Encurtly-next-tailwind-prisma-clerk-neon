@@ -24,7 +24,7 @@ export async function GET(
     if (!member) return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 })
   }
 
-  const url = `${process.env.NEXT_PUBLIC_APP_URL}/r/${link.slug}`
+  const url = `${process.env.NEXT_PUBLIC_APP_URL}/${link.slug}`
 
   const qrCodeDataUrl = await QRCode.toDataURL(url, {
     width: 300,

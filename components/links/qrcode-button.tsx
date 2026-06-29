@@ -53,7 +53,7 @@ export function QRCodeButton({ linkId, slug }: QRCodeButtonProps) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>QR Code — /r/{slug}</DialogTitle>
+            <DialogTitle>QR Code — /{slug}</DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-col items-center gap-4 py-4">
@@ -65,7 +65,7 @@ export function QRCodeButton({ linkId, slug }: QRCodeButtonProps) {
               <>
                 <img
                   src={qrCode}
-                  alt={`QR Code para /r/${slug}`}
+                  alt={`QR Code para /${slug}`}
                   width={300}
                   height={300}
                   className="rounded-lg border"

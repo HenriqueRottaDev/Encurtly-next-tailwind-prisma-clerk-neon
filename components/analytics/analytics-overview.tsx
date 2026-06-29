@@ -95,7 +95,7 @@ export function AnalyticsOverview({
                     </span>
                     <div>
                       <p className="text-sm font-medium text-primary">
-                        /r/{link.slug}
+                        {link.slug}
                       </p>
                       {link.title && (
                         <p className="text-xs text-muted-foreground">{link.title}</p>

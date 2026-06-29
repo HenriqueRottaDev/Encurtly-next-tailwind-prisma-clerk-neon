@@ -12,7 +12,7 @@ export function CopyButton({ slug }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/r/${slug}`)
+    navigator.clipboard.writeText(`${window.location.origin}/${slug}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
