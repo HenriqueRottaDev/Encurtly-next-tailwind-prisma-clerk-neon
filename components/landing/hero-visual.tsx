@@ -43,7 +43,7 @@ export function HeroVisual() {
         <div className="flex items-center gap-2 mb-5">
           <div className="flex-1 bg-muted rounded-lg px-3 py-2 overflow-hidden">
             <span className="text-xs font-mono text-primary truncate block">
-              encurtly.com.br/r/<strong>black-friday</strong>
+              encurtly.com.br/<strong>black-friday</strong>
             </span>
           </div>
           <span className="text-xs bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 rounded-md px-2 py-1 font-medium">
