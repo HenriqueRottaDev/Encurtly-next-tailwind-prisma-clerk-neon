@@ -12,27 +12,27 @@ import {
 import { toast } from 'sonner'
 
 interface ReportButtonsProps {
-  plan: 'FREE' | 'PRO' | 'AGENCY'
+  plan: 'FREE' | 'BASIC' | 'PRO' | 'AGENCY'  // 👈 adiciona BASIC
   workspaceId?: string
 }
 
-const PLAN_LABELS = { FREE: 0, PRO: 3, AGENCY: 12 }
+const PLAN_LABELS = { FREE: 0, BASIC: 0, PRO: 3, AGENCY: 12 }
 
 export function ReportButtons({ plan, workspaceId }: ReportButtonsProps) {
   const [loadingCsv, setLoadingCsv] = useState(false)
   const [loadingPdf, setLoadingPdf] = useState(false)
 
-  if (plan === 'FREE') {
-    return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Lock className="h-4 w-4" />
-        <span>Relatórios disponíveis nos planos Pro e Agência.</span>
-        <Button variant="outline" size="sm" asChild>
-          <a href="/pricing">Ver planos</a>
-        </Button>
-      </div>
-    )
-  }
+  if (plan === 'FREE' || plan === 'BASIC') {
+  return (
+    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <Lock className="h-4 w-4" />
+      <span>Relatórios disponíveis nos planos Pro e Agência.</span>
+      <Button variant="outline" size="sm" asChild>
+        <a href="/pricing">Ver planos</a>
+      </Button>
+    </div>
+  )
+}
 
   const months = PLAN_LABELS[plan]
   const params = workspaceId ? `?workspaceId=${workspaceId}` : ''

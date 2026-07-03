@@ -25,6 +25,8 @@ model User {
   workspaces WorkspaceMember[]
   workspaceLogs WorkspaceLog[]
   customDomain CustomDomain?
+  trialEndsAt DateTime?
+  hasHadTrial Boolean  @default(false)
 }
 
 // ─── WORKSPACE (espaço de trabalho) ────────────────────
@@ -167,6 +169,7 @@ model TagOnLink {
 // ─── ENUMS ─────────────────────────────────────────────
 enum Plan {
   FREE
+  BASIC
   PRO
   AGENCY
 }

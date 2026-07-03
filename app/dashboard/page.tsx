@@ -8,12 +8,18 @@ import { BulkUpload } from '@/components/links/bulk-upload'
 import { prisma } from '@/lib/prisma'
 import { ReportButtons } from '@/components/reports/report-buttons'
 
+import { TrialExpiredGate } from '@/components/dashboard/trial-expired-gate'
+
 export default async function DashboardPage() {
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
 
   const user = await UserRepository.findByClerkId(userId)
   if (!user) redirect('/sign-in')
+
+  if (user.plan === 'FREE') {
+    return <TrialExpiredGate hasHadTrial={user.hasHadTrial} />
+  }
 
   const initialData = await LinkRepository.findByUserIdPaginated(user.id, 1, 10)
 
@@ -53,11 +59,11 @@ export default async function DashboardPage() {
       </div>
       <LinksDashboard
         initialData={initialData}
-        isPro={user.plan !== 'FREE'}
+        isPro={user.plan === 'PRO' || user.plan === 'AGENCY'}
         workspaceTopLinks={filteredTopLinks}
         userWorkspaces={workspaces.map((ws) => ({ id: ws.id, name: ws.name }))}
       />
-      <BulkUpload isPro={user.plan !== 'FREE'} />
+      <BulkUpload isPro={user.plan === 'PRO' || user.plan === 'AGENCY'} />
     </div>
   )
 }

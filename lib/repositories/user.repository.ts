@@ -17,7 +17,17 @@ export class UserRepository {
     email: string
     name?: string | null
   }): Promise<User> {
-    return prisma.user.create({ data })
+    const trialEndsAt = new Date()
+    trialEndsAt.setDate(trialEndsAt.getDate() + 3)
+
+    return prisma.user.create({
+      data: {
+        ...data,
+        plan: 'PRO',
+        trialEndsAt,
+        hasHadTrial: true,
+      },
+    })
   }
 
   static async deleteByClerkId(clerkId: string): Promise<void> {
@@ -33,7 +43,7 @@ export class UserRepository {
       stripeSubscriptionId?: string | null
       stripeCurrentPeriodEnd?: Date | null
       stripeCancelAtPeriodEnd?: boolean
-      plan?: 'FREE' | 'PRO' | 'AGENCY'
+      plan?: 'FREE' | 'BASIC' | 'PRO' | 'AGENCY'
     }
   ) {
     return prisma.user.update({
