@@ -56,6 +56,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium text-muted-foreground">Relatórios</h2>
         <ReportButtons plan={user.plan} />
+        
       </div>
       <LinksDashboard
         initialData={initialData}
