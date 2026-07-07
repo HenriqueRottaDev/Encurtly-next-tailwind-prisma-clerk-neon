@@ -18,8 +18,8 @@ interface DomainData {
 }
 
 interface DomainSettingsProps {
-    apiPath: string // '/api/domains' para user, '/api/workspaces/[id]/domain' para workspace
-    plan: 'FREE' | 'PRO' | 'AGENCY'
+    apiPath: string
+    plan: 'FREE' | 'BASIC' | 'PRO' | 'AGENCY' 
     maxDomains: number
 }
 
