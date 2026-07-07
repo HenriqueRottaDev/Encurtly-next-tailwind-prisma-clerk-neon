@@ -6,7 +6,7 @@ import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { ReportDocument } from '@/components/reports/report-document'
 
-const PLAN_DAYS = { FREE: 0, PRO: 90, AGENCY: 365 }
+const PLAN_DAYS = { FREE: 0, BASIC: 0, PRO: 90, AGENCY: 365 }
 
 export async function GET(req: NextRequest) {
     const { userId } = await auth()
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const user = await UserRepository.findByClerkId(userId)
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    if (user.plan === 'FREE') {
+    if (user.plan === 'FREE' || user.plan === 'BASIC') {
         return NextResponse.json({ error: 'Relatórios disponíveis nos planos Pro e Agência.' }, { status: 403 })
     }
 
