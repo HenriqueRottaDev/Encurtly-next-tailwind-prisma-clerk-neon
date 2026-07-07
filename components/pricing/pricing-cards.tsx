@@ -13,17 +13,11 @@ interface PricingCardsProps {
   isLoggedIn: boolean
 }
 
-const PRICES = {
-  FREE: 'R$ 0',
-  PRO: 'R$ 29',
-  AGENCY: 'R$ 79',
-}
-
 export function PricingCards({ currentPlan, isLoggedIn }: PricingCardsProps) {
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
 
-  const handleSubscribe = async (plan: 'PRO' | 'AGENCY') => {
+  const handleSubscribe = async (plan: 'BASIC' | 'PRO' | 'AGENCY') => {
     if (!isLoggedIn) {
       router.push('/sign-up')
       return
@@ -64,8 +58,9 @@ export function PricingCards({ currentPlan, isLoggedIn }: PricingCardsProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* FREE */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+      {/* FREE — agora é "trial expirado" */}
       <Card className={currentPlan === 'FREE' ? 'border-primary/50' : ''}>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -74,10 +69,10 @@ export function PricingCards({ currentPlan, isLoggedIn }: PricingCardsProps) {
               <Badge variant="secondary">Plano atual</Badge>
             )}
           </div>
-          <CardDescription>Para experimentar e uso pessoal</CardDescription>
+          <CardDescription>Teste grátis por 3 dias</CardDescription>
           <div className="pt-2">
             <span className="text-3xl font-semibold">R$ 0</span>
-            <span className="text-muted-foreground text-sm">/mês</span>
+            <span className="text-muted-foreground text-sm">/3 dias</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -95,14 +90,60 @@ export function PricingCards({ currentPlan, isLoggedIn }: PricingCardsProps) {
             disabled={currentPlan === 'FREE' || !isLoggedIn}
             onClick={() => isLoggedIn ? null : router.push('/sign-up')}
           >
-            {currentPlan === 'FREE' ? 'Plano atual' : 'Começar grátis'}
+            {currentPlan === 'FREE' ? 'Plano atual' : 'Começar teste grátis'}
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* BASIC */}
+      <Card className={currentPlan === 'BASIC' ? 'border-primary/50' : ''}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Básico</CardTitle>
+            {currentPlan === 'BASIC' && (
+              <Badge variant="secondary">Plano atual</Badge>
+            )}
+          </div>
+          <CardDescription>Para começar com mais limite</CardDescription>
+          <div className="pt-2">
+            <span className="text-3xl font-semibold">R$ 9,90</span>
+            <span className="text-muted-foreground text-sm">/mês</span>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <ul className="space-y-2">
+            {PLANS.BASIC.features.map(feature => (
+              <li key={feature} className="flex items-start gap-2 text-sm">
+                <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                {feature}
+              </li>
+            ))}
+          </ul>
+          {currentPlan === 'BASIC' ? (
+            <Button
+              className="w-full"
+              variant="outline"
+              onClick={handleManage}
+              disabled={loading === 'MANAGE'}
+            >
+              {loading === 'MANAGE' ? 'Carregando...' : 'Gerenciar assinatura'}
+            </Button>
+          ) : (
+            <Button
+              className="w-full"
+              variant="outline"
+              onClick={() => handleSubscribe('BASIC')}
+              disabled={!!loading}
+            >
+              {loading === 'BASIC' ? 'Carregando...' : 'Assinar Básico'}
+            </Button>
+          )}
         </CardContent>
       </Card>
 
       {/* PRO */}
       <Card className={`relative ${currentPlan === 'PRO' ? 'border-primary/50' : 'border-primary'}`}>
-        <div className="absolute left-1/2 -translate-x-1/2">
+        <div className="absolute left-1/2 -translate-x-1/2 -top-3">
           <Badge className="bg-primary text-primary-foreground">Mais popular</Badge>
         </div>
         <CardHeader>

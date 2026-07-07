@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { stripeActionLimiter } from '@/lib/rate-limit'
 
 const checkoutSchema = z.object({
-  plan: z.enum(['PRO', 'AGENCY']),
+  plan: z.enum(['BASIC', 'PRO', 'AGENCY']),
 })
 
 export async function POST(req: Request) {
