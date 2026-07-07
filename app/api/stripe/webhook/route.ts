@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     )
 
     const clerkId = session.metadata?.clerkId
-    const plan = session.metadata?.plan as 'PRO' | 'AGENCY'
+    const plan = session.metadata?.plan as 'BASIC' | 'PRO' | 'AGENCY'
 
     if (!clerkId || !plan) return new Response('Metadata ausente', { status: 400 })
 
