@@ -15,6 +15,7 @@ const isPublicRoute = createRouteMatcher([
   '/monitoring(.*)',
   '/invite/(.*)',
   '/api/invite/(.*)',
+  '/api/cron/(.*)',
 ])
 export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
