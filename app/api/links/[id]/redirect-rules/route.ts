@@ -56,7 +56,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   // plano check contra o dono do link
   if (!link.workspaceId) {
     const linkOwner = await UserRepository.findById(link.userId)
-    if (!linkOwner || linkOwner.plan === 'FREE') {
+    if (!linkOwner || linkOwner.plan === 'FREE' || linkOwner.plan === 'BASIC') {
       return NextResponse.json(
         { error: 'Redirect condicional disponível nos planos Pro e Agência.' },
         { status: 403 }

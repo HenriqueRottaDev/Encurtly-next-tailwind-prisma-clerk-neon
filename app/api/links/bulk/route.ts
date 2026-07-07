@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     const user = await UserRepository.findByClerkId(userId)
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    if (user.plan === 'FREE') {
+    if (user.plan === 'FREE' || user.plan === 'BASIC') {
         return NextResponse.json(
             { error: 'Upload em massa disponível nos planos Pro e Agência.' },
             { status: 403 }

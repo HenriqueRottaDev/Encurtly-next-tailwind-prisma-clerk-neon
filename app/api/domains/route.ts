@@ -4,11 +4,6 @@ import { UserRepository } from '@/lib/repositories'
 import { CustomDomainRepository } from '@/lib/repositories/custom-domain.repository'
 import { addDomainToVercel } from '@/lib/services/vercel-domains'
 
-const PLAN_DOMAIN_LIMITS = {
-  FREE: 0,
-  PRO: 1,
-  AGENCY: 10,
-}
 
 export async function GET() {
   const { userId } = await auth()
@@ -28,12 +23,12 @@ export async function POST(req: NextRequest) {
   const user = await UserRepository.findByClerkId(userId)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  if (user.plan === 'FREE') {
-    return NextResponse.json(
-      { error: 'Domínios personalizados não estão disponíveis no plano Free.' },
-      { status: 403 }
-    )
-  }
+  if (user.plan === 'FREE' || user.plan === 'BASIC') {
+  return NextResponse.json(
+    { error: 'Domínios personalizados disponíveis nos planos Pro e Agência.' },
+    { status: 403 }
+  )
+}
 
   // Pro só pode ter 1 domínio pessoal
   if (user.plan === 'PRO') {

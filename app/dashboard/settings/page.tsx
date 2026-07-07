@@ -10,7 +10,7 @@ export default async function SettingsPage() {
   const user = await UserRepository.findByClerkId(userId)
   if (!user) redirect('/sign-in')
 
-  if (user.plan === 'FREE') {
+  if (user.plan === 'FREE' || user.plan === 'BASIC') {
     return (
       <div className="space-y-6">
         <div>
