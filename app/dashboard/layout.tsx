@@ -1,17 +1,23 @@
 import { UserButton } from '@clerk/nextjs'
+import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { NavLink } from '@/components/dashboard/nav-link'
+import { PlanBadge } from '@/components/dashboard/plan-badge'
+import { UserRepository } from '@/lib/repositories'
 import {
   Link2, BarChart3, CreditCard, Building2, Settings,
 } from 'lucide-react'
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { userId } = await auth()
+  const user = userId ? await UserRepository.findByClerkId(userId) : null
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-50">
@@ -50,7 +56,8 @@ export default function DashboardLayout({
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
+            {user && <PlanBadge plan={user.plan} />}
             <ThemeToggle />
             <UserButton />
           </div>

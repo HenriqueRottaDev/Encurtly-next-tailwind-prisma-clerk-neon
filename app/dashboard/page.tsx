@@ -2,12 +2,8 @@ import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { UserRepository, LinkRepository } from '@/lib/repositories'
 import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
-import { LinksDashboard } from '@/components/links/links-dashboard'
-import { PlanUsage } from '@/components/dashboard/plan-usage'
-import { BulkUpload } from '@/components/links/bulk-upload'
+import { DashboardTabs } from '@/components/dashboard/dashboard-tabs'
 import { prisma } from '@/lib/prisma'
-import { ReportButtons } from '@/components/reports/report-buttons'
-
 import { TrialExpiredGate } from '@/components/dashboard/trial-expired-gate'
 
 export default async function DashboardPage() {
@@ -23,7 +19,6 @@ export default async function DashboardPage() {
 
   const initialData = await LinkRepository.findByUserIdPaginated(user.id, 1, 10)
 
-  // Top link de cada workspace que o usuário pertence
   const workspaces = await WorkspaceRepository.findByUserId(user.id)
   const workspaceTopLinks = await Promise.all(
     workspaces.map(async (ws) => {
@@ -45,26 +40,15 @@ export default async function DashboardPage() {
     : 0
 
   return (
-    <div className="space-y-6">
-      <PlanUsage
-        plan={user.plan}
-        linksUsed={initialData.total}
-        clicksUsed={clicksThisMonth}
-        cancelAtPeriodEnd={user.stripeCancelAtPeriodEnd}
-        currentPeriodEnd={user.stripeCurrentPeriodEnd}
-      />
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-muted-foreground">Relatórios</h2>
-        <ReportButtons plan={user.plan} />
-        
-      </div>
-      <LinksDashboard
-        initialData={initialData}
-        isPro={user.plan === 'PRO' || user.plan === 'AGENCY'}
-        workspaceTopLinks={filteredTopLinks}
-        userWorkspaces={workspaces.map((ws) => ({ id: ws.id, name: ws.name }))}
-      />
-      <BulkUpload isPro={user.plan === 'PRO' || user.plan === 'AGENCY'} />
-    </div>
+    <DashboardTabs
+      plan={user.plan}
+      initialData={initialData}
+      workspaceTopLinks={filteredTopLinks}
+      userWorkspaces={workspaces.map((ws) => ({ id: ws.id, name: ws.name }))}
+      linksUsed={initialData.total}
+      clicksUsed={clicksThisMonth}
+      cancelAtPeriodEnd={user.stripeCancelAtPeriodEnd}
+      currentPeriodEnd={user.stripeCurrentPeriodEnd}
+    />
   )
 }

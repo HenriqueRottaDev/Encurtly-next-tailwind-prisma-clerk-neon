@@ -31,11 +31,13 @@ export default async function LinkAnalyticsPage({ params }: PageProps) {
 
   const isWorkspaceLink = !!link.workspaceId
 
+  const isProOrAgency = user.plan === 'PRO' || user.plan === 'AGENCY'
+
   return (
     <LinkAnalyticsView
       link={link}
       analytics={analytics}
-      isPro={user.plan !== 'FREE' || isWorkspaceLink}
+      isPro={isProOrAgency || isWorkspaceLink}
     />
   )
 }

@@ -4,7 +4,11 @@ import { UserRepository } from '@/lib/repositories'
 import { ClickRepository } from '@/lib/repositories/click.repository'
 import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
 
-const PLAN_DAYS = { FREE: 0, BASIC: 0, PRO: 90, AGENCY: 365 }
+const PLAN_MAX_DAYS = { FREE: 0, BASIC: 0, PRO: 90, AGENCY: 365 }
+const ALLOWED_DAYS_BY_PLAN = {
+  PRO: [7, 30, 60, 90],
+  AGENCY: [7, 30, 90, 180, 365],
+}
 
 export async function GET(req: NextRequest) {
   const { userId } = await auth()
@@ -19,7 +23,10 @@ export async function GET(req: NextRequest) {
 
   const sp = req.nextUrl.searchParams
   const workspaceId = sp.get('workspaceId')
-  const days = PLAN_DAYS[user.plan]
+  const requestedDays = Number(sp.get('days') ?? PLAN_MAX_DAYS[user.plan])
+
+  const allowedDays = ALLOWED_DAYS_BY_PLAN[user.plan]
+  const days = allowedDays.includes(requestedDays) ? requestedDays : PLAN_MAX_DAYS[user.plan]
 
   let data: Awaited<ReturnType<typeof ClickRepository.getReportDataForUser>>
 
