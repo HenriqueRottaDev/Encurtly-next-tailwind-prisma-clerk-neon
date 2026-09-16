@@ -27,6 +27,7 @@ model User {
   customDomain CustomDomain?
   trialEndsAt DateTime?
   hasHadTrial Boolean  @default(false)
+  lastUsageAlertSentAt DateTime?
 }
 
 // ─── WORKSPACE (espaço de trabalho) ────────────────────
